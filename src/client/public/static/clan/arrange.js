@@ -104,7 +104,6 @@ var vm = new Vue({
             if (!this.knifeList[phase]) {
                 this.knifeList[phase] = [];
             }
-            var newIndex = this.knifeList[phase].length;
             this.knifeList[phase].push({
                 boss_num: 1,
                 team: '',
@@ -112,7 +111,29 @@ var vm = new Vue({
                 value: null
             });
             this.saveKnifeData();
-            this.renderSingleKnife(phase, newIndex);
+            this.$nextTick(() => {
+                setTimeout(() => {
+                    this.renderPhaseKnives(phase);
+                }, 100);
+            });
+        },
+        renderPhaseKnives(phase) {
+            var phaseContainer = document.getElementById('knife-phase-' + phase);
+            if (!phaseContainer) {
+                return;
+            }
+            var phaseList = this.knifeList[phase] || [];
+            var emptyDiv = document.getElementById('knife-phase-' + phase + '-empty');
+            
+            phaseContainer.innerHTML = '';
+            
+            if (emptyDiv) {
+                emptyDiv.style.display = phaseList.length === 0 ? 'block' : 'none';
+            }
+            
+            for (var i = 0; i < phaseList.length; i++) {
+                phaseContainer.insertAdjacentHTML('beforeend', this.generatePhaseKnifeHtml(phase, i, phaseList[i]));
+            }
         },
         deleteKnife(phase, index) {
             this.$confirm('确定删除这条刀型?', '提示', {
@@ -122,7 +143,7 @@ var vm = new Vue({
             }).then(() => {
                 this.knifeList[phase].splice(index, 1);
                 this.saveKnifeData();
-                this.renderKnifeData();
+                this.renderPhaseKnives(phase);
                 this.$message({
                     type: 'success',
                     message: '删除成功'
@@ -136,11 +157,11 @@ var vm = new Vue({
             var phaseList = this.knifeList[phase] || [];
             
             if (phaseList.length === 0) {
-                emptyDiv.style.display = 'block';
+                if (emptyDiv) emptyDiv.style.display = 'block';
                 return;
             }
             
-            emptyDiv.style.display = 'none';
+            if (emptyDiv) emptyDiv.style.display = 'none';
             
             var existingRows = phaseContainer.querySelectorAll('.knife-row');
             var existingRow = existingRows[index];
@@ -154,27 +175,55 @@ var vm = new Vue({
         },
         generatePhaseKnifeHtml(phase, index, item) {
             var unitLabel = item.damage_type === 'damage' ? 'w' : 's';
-            return '<div class="knife-row">' +
-                '<select v-model="item.boss_num" class="el-select boss-select" onchange="vm.updateKnife(' + phase + ', ' + index + ', \'boss_num\', this.value)">' +
+            var bossLabels = ['1号', '2号', '3号', '4号', '5号'];
+            var currentBoss = bossLabels[(item.boss_num || 1) - 1] || '1号';
+            return '<div class="knife-row" data-phase="' + phase + '" data-index="' + index + '">' +
+                '<select class="boss-select" onchange="vm.updateKnife(' + phase + ', ' + index + ', \'boss_num\', parseInt(this.value))">' +
                     '<option value="1"' + (item.boss_num == 1 ? ' selected' : '') + '>1号</option>' +
                     '<option value="2"' + (item.boss_num == 2 ? ' selected' : '') + '>2号</option>' +
                     '<option value="3"' + (item.boss_num == 3 ? ' selected' : '') + '>3号</option>' +
                     '<option value="4"' + (item.boss_num == 4 ? ' selected' : '') + '>4号</option>' +
                     '<option value="5"' + (item.boss_num == 5 ? ' selected' : '') + '>5号</option>' +
                 '</select>' +
-                '<input type="text" v-model="item.team" placeholder="阵容" class="el-input team-input" onchange="vm.updateKnife(' + phase + ', ' + index + ', \'team\', this.value)" value="' + (item.team || '').replace(/"/g, '&quot;') + '">' +
-                '<select v-model="item.damage_type" class="el-select" onchange="vm.updateKnife(' + phase + ', ' + index + ', \'damage_type\', this.value)">' +
+                '<input type="text" class="team-input" placeholder="输入阵容" onchange="vm.updateKnife(' + phase + ', ' + index + ', \'team\', this.value)" value="' + (item.team || '') + '">' +
+                '<select class="damage-select" onchange="vm.updateKnife(' + phase + ', ' + index + ', \'damage_type\', this.value)">' +
                     '<option value="damage"' + (item.damage_type === 'damage' ? ' selected' : '') + '>伤害</option>' +
                     '<option value="time"' + (item.damage_type === 'time' ? ' selected' : '') + '>返秒</option>' +
                 '</select>' +
-                '<div class="el-input value-input">' +
-                    '<input type="number" v-model="item.value" placeholder="数值" style="width:100%;border:none;outline:none;text-align:center;" onchange="vm.updateKnife(' + phase + ', ' + index + ', \'value\', this.value)" value="' + (item.value || '') + '">' +
-                    '<span id="unit-' + phase + '-' + index + '" class="unit-label" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);">' + unitLabel + '</span>' +
+                '<div class="value-wrapper">' +
+                    '<input type="number" placeholder="数值" class="value-input" onchange="vm.updateKnife(' + phase + ', ' + index + ', \'value\', this.value)" value="' + (item.value || '') + '">' +
+                    '<span id="unit-' + phase + '-' + index + '" class="unit-label">' + unitLabel + '</span>' +
                 '</div>' +
-                '<button type="button" class="el-button el-button--danger is-circle" onclick="vm.deleteKnife(' + phase + ', ' + index + ')">' +
+                '<button type="button" class="el-button el-button--danger is-circle delete-btn" onclick="vm.deleteKnife(' + phase + ', ' + index + ')">' +
                     '<i class="el-icon-delete"></i>' +
                 '</button>' +
             '</div>';
+        },
+        editTeam(phase, index) {
+            var item = this.knifeList[phase][index];
+            var newTeam = prompt('请输入阵容:', item.team || '');
+            if (newTeam !== null) {
+                this.updateKnife(phase, index, 'team', newTeam);
+                this.renderPhaseKnives(phase);
+            }
+        },
+        renderPhaseKnives(phase) {
+            var phaseContainer = document.getElementById('knife-phase-' + phase);
+            if (!phaseContainer) {
+                return;
+            }
+            var phaseList = this.knifeList[phase] || [];
+            var emptyDiv = document.getElementById('knife-phase-' + phase + '-empty');
+            
+            phaseContainer.innerHTML = '';
+            
+            if (emptyDiv) {
+                emptyDiv.style.display = phaseList.length === 0 ? 'block' : 'none';
+            }
+            
+            for (var i = 0; i < phaseList.length; i++) {
+                phaseContainer.insertAdjacentHTML('beforeend', this.generatePhaseKnifeHtml(phase, i, phaseList[i]));
+            }
         },
         updateKnife(phase, index, field, value) {
             if (this.knifeList[phase] && this.knifeList[phase][index]) {

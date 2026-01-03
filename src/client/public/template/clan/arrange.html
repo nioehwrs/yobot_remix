@@ -16,55 +16,203 @@
         }
         .knife-row {
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
             justify-content: center;
-            margin-bottom: 8px;
             gap: 8px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            max-width: 480px;
+            margin-left: auto;
+            margin-right: auto;
+            background: linear-gradient(135deg, #f8f9ff 0%, #eef1ff 50%, #e6e9ff 100%);
+            border-radius: 12px;
+            border: 1px solid #c7cfff;
+            box-shadow: 0 4px 12px rgba(100, 130, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .knife-row .el-select, .knife-row .el-input {
-            width: 100px;
+        .knife-row:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(100, 130, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
         }
-        .knife-row .el-input {
-            width: 80px;
+        .knife-row .el-tag {
+            margin: 0;
+        }
+        .knife-row .boss-select {
+            padding: 4px 8px;
+            border: 1px solid #c7cfff;
+            border-radius: 4px;
+            background: #fff;
+            font-size: 12px;
+            color: #ff4777;
+            cursor: pointer;
+            outline: none;
+            font-weight: 600;
+        }
+        .knife-row .boss-select:hover {
+            border-color: #ff6b9d;
+        }
+        .knife-row .boss-select:focus {
+            border-color: #ff4777;
+            box-shadow: 0 0 0 2px rgba(255, 71, 119, 0.2);
+        }
+        .knife-row .damage-tag {
+            min-width: 48px;
+            text-align: center;
+            border-radius: 6px;
+            font-size: 12px;
+            box-shadow: 0 2px 8px rgba(100, 158, 255, 0.25);
+        }
+        .knife-row .damage-select {
+            padding: 4px 8px;
+            border: 1px solid #c7cfff;
+            border-radius: 4px;
+            background: #fff;
+            font-size: 12px;
+            color: #4facfe;
+            cursor: pointer;
+            outline: none;
+            font-weight: 500;
+        }
+        .knife-row .damage-select:hover {
+            border-color: #6dd5fa;
+        }
+        .knife-row .damage-select:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 0 2px rgba(79, 172, 254, 0.2);
         }
         .knife-row .team-input {
             flex: 1;
-            min-width: 150px;
-            max-width: 200px;
+            min-width: 100px;
+            max-width: 160px;
+            padding: 5px 10px;
+            border: 1px solid #c7cfff;
+            border-radius: 4px;
+            background: #fff;
+            font-size: 12px;
+            color: #333;
+            outline: none;
         }
-        .knife-row .boss-select {
-            width: 70px;
+        .knife-row .team-input::placeholder {
+            color: #a0aec0;
+        }
+        .knife-row .team-input:hover {
+            border-color: #6dd5fa;
+        }
+        .knife-row .team-input:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 0 2px rgba(79, 172, 254, 0.2);
+        }
+        .knife-row .team-tag {
+            flex: 1;
+            min-width: 100px;
+            max-width: 160px;
+            background: linear-gradient(135deg, #6dd5fa 0%, #4facfe 100%);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(79, 172, 254, 0.35);
+        }
+        .knife-row .team-tag .el-tag__close {
+            color: #fff;
+        }
+        .knife-row .team-tag .el-tag__close:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+        }
+        .knife-row .value-wrapper {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border-radius: 6px;
+            padding: 0 8px;
+            border: 1px solid #d0d7ff;
         }
         .knife-row .value-input {
-            width: 70px;
+            width: 55px;
+            border: none;
+            outline: none;
+            text-align: center;
+            font-size: 13px;
+            padding: 4px 0;
+            background: transparent;
+            color: #333;
+        }
+        .knife-row .value-input::placeholder {
+            color: #a0aec0;
         }
         .knife-row .unit-label {
             font-size: 12px;
-            color: #909399;
+            color: #4facfe;
+            margin-left: 4px;
+            font-weight: 600;
+        }
+        .knife-row .delete-btn {
+            padding: 6px;
+            margin-left: 4px;
+            background: rgba(255, 71, 119, 0.1);
+            border-color: #ff4777;
+            color: #ff4777;
+        }
+        .knife-row .delete-btn:hover {
+            background: #ff4777;
+            color: #fff;
         }
         .knife-container {
             display: none;
         }
         .phase-section {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         .phase-title {
             text-align: center;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             color: #303133;
-            margin: 15px 0 10px;
-            padding-bottom: 8px;
+            margin: 12px 0 8px;
+            padding-bottom: 6px;
             border-bottom: 2px solid #409EFF;
         }
         .phase-content {
-            padding: 0 10px;
+            padding: 0 4px;
         }
         .phase-empty {
             text-align: center;
             color: #909399;
-            padding: 15px;
-            font-size: 13px;
+            padding: 12px;
+            font-size: 12px;
+            background: #fafafa;
+            border-radius: 6px;
+            margin: 4px 0;
+        }
+        .phase-actions {
+            margin-top: 8px;
+            text-align: center;
+        }
+        .insert-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 14px;
+            width: 100%;
+            max-width: 480px;
+            background: transparent;
+            border: 2px dashed #c7cfff;
+            border-radius: 12px;
+            color: #909399;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .insert-btn:hover {
+            border-color: #4facfe;
+            color: #4facfe;
+            background: rgba(79, 172, 254, 0.05);
+        }
+        .insert-btn:active {
+            transform: scale(0.98);
         }
     </style>
 </head>
@@ -101,8 +249,11 @@
                                 该阶段暂无刀型
                             </div>
                         </div>
-                        <div style="text-align:center;margin-top:10px;">
-                            <el-button size="mini" type="primary" :icon="'el-icon-plus'" :onclick="'vm.insertKnife(' + phase + ')'">{{ phase }}阶段插入刀型</el-button>
+                        <div style="text-align:center;margin-top:10px;" class="phase-actions">
+                            <button type="button" class="insert-btn" @click="insertKnife(phase)">
+                                <i class="el-icon-plus"></i>
+                                <span>{{ phase }}阶段插入刀型</span>
+                            </button>
                         </div>
                     </div>
                     {% endraw %}
