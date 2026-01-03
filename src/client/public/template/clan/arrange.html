@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+
+<head>
+    <title>排刀列表</title>
+    <meta name='viewport' content='width=480' charset="utf-8" />
+    <script src="/yobot-depencency/vue@2.6.11/dist/vue.min.js"></script>
+    <script src="/yobot-depencency/axios@0.19.2/dist/axios.min.js"></script>
+    <script src="/yobot-depencency/element-ui@2.13.0/lib/index.js"></script>
+    <link rel="stylesheet" href="/yobot-depencency/element-ui@2.13.0/lib/theme-chalk/index.css">
+    <script src="/yobot-depencency/jquery@2.1.1/jquery.min.js"></script>
+    <script src="/yobot-depencency/yocool@final/princessadventure/yocool.js"></script>
+    <link rel="stylesheet" href="/yobot-depencency/yocool@final/princessadventure/style.css">
+    <style>
+        .el-badge {
+            margin-top: 8px;
+        }
+        .knife-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            gap: 8px;
+        }
+        .knife-row .el-select, .knife-row .el-input {
+            width: 100px;
+        }
+        .knife-row .el-input {
+            width: 80px;
+        }
+        .knife-row .team-input {
+            flex: 1;
+            min-width: 150px;
+            max-width: 200px;
+        }
+        .knife-row .boss-select {
+            width: 70px;
+        }
+        .knife-row .value-input {
+            width: 70px;
+        }
+        .knife-row .unit-label {
+            font-size: 12px;
+            color: #909399;
+        }
+        .knife-container {
+            display: none;
+        }
+        .phase-section {
+            margin-bottom: 20px;
+        }
+        .phase-title {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: #303133;
+            margin: 15px 0 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #409EFF;
+        }
+        .phase-content {
+            padding: 0 10px;
+        }
+        .phase-empty {
+            text-align: center;
+            color: #909399;
+            padding: 15px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div id="topToolbar">
+            <el-page-header @back="location='../'"></el-page-header>
+            
+            <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect">
+                <el-menu-item index="6">排名</el-menu-item>
+                <el-menu-item index="5">我的</el-menu-item>
+                <el-menu-item index="4">统计</el-menu-item>
+                <el-menu-item index="3">查刀</el-menu-item>
+                <el-menu-item index="2">排刀</el-menu-item>
+                <el-menu-item index="1">面板</el-menu-item>
+            </el-menu>
+        </div>
+        <h1 style="text-align:center">排刀列表</h1>
+        <el-tabs type="border-card" style="width: 95%;margin: auto;">
+            <el-tab-pane>
+                <span slot="label">
+                    <i class="el-icon-document"></i> 刀型
+                </span>
+                <div id="knife-empty" style="text-align:center;color:#909399;padding:20px;">
+                    暂无刀型数据，点击下方按钮插入
+                </div>
+                <div id="knife-container" class="knife-container">
+                    {% raw %}
+                    <div v-for="phase in [2, 3, 4]" :key="phase" class="phase-section">
+                        <div class="phase-title">{{ phase }}阶段</div>
+                        <div :id="'knife-phase-' + phase" class="phase-content">
+                            <div :id="'knife-phase-' + phase + '-empty'" class="phase-empty" style="display:none;">
+                                该阶段暂无刀型
+                            </div>
+                        </div>
+                        <div style="text-align:center;margin-top:10px;">
+                            <el-button size="mini" type="primary" :icon="'el-icon-plus'" :onclick="'vm.insertKnife(' + phase + ')'">{{ phase }}阶段插入刀型</el-button>
+                        </div>
+                    </div>
+                    {% endraw %}
+                </div>
+            </el-tab-pane>
+            <el-tab-pane>
+                <span slot="label">
+                    <i class="el-icon-s-data"></i> 伤害统计
+                </span>
+                <p style="text-align:center;color:#909399;">伤害统计功能开发中</p>
+            </el-tab-pane>
+            <el-tab-pane>
+                <span slot="label">
+                    <i class="el-icon-bell"></i> 预约提醒
+                </span>
+                <p style="text-align:center;color:#909399;">预约提醒功能开发中</p>
+            </el-tab-pane>
+        </el-tabs>
+    </div>
+</body>
+<script>var csrf_token = "{{ session['csrf_token'] }}";</script>
+<script src="{{ url_for('yobot_static', filename='clan/arrange.js') }}"></script>
