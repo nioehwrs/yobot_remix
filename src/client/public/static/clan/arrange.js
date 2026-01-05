@@ -485,7 +485,7 @@ var vm = new Vue({
         },
         getBossBlocks(day, boss) {
             if (!this.statsConfig[day] || !this.statsConfig[day][boss]) {
-                return [];
+                return { rows: [], maxWidth: 0 };
             }
             var config = this.statsConfig[day][boss];
             var x = config.x || (day === 1 ? 14 : 18);
@@ -497,65 +497,71 @@ var vm = new Vue({
             var rows = [];
             var maxWidth = 0;
 
-            if (b === 0) {
-                var fullRows = Math.floor(x / a);
-                var remainingFull = x % a;
-                for (var rowIndex = 0; rowIndex < cycles.length && rowIndex < fullRows + (remainingFull > 0 ? 1 : 0); rowIndex++) {
-                    var blocks = [];
-                    var knivesInRow = rowIndex < fullRows ? a : remainingFull;
-                    for (var i = 0; i < knivesInRow; i++) {
-                        blocks.push({ width: 1, type: 'full' });
-                    }
-                    rows.push({
-                        cycle: cycles[rowIndex],
-                        blocks: blocks
-                    });
-                    maxWidth = Math.max(maxWidth, knivesInRow);
+            var BLOCK_VALUE = 12;
+            var rowCapacityValue = a * BLOCK_VALUE + b * BLOCK_VALUE / c;
+            var totalValue = x * BLOCK_VALUE;
+
+            for (var rowIndex = 0; rowIndex < cycles.length; rowIndex++) {
+                var usedValue = rowIndex * rowCapacityValue;
+                var remainingValue = totalValue - usedValue;
+
+                if (remainingValue <= 0.01) break;
+
+                var valueToUse = rowCapacityValue;
+                if (remainingValue < rowCapacityValue) {
+                    valueToUse = remainingValue;
                 }
-            } else {
-                var BLOCK_VALUE = 12;
-                var rowCapacityValue = a * BLOCK_VALUE + b * BLOCK_VALUE / c;
-                var totalValue = x * BLOCK_VALUE;
-                
-                for (var rowIndex = 0; rowIndex < cycles.length; rowIndex++) {
-                    var usedValue = rowIndex * rowCapacityValue;
-                    var remainingValue = totalValue - usedValue;
-                    
-                    if (remainingValue <= 0.01) break;
-                    
-                    var valueToUse = rowCapacityValue;
-                    if (remainingValue < rowCapacityValue) {
-                        valueToUse = remainingValue;
+
+                var blocks = [];
+                var rowWidth = 0;
+
+                var usedMod = (rowIndex * rowCapacityValue) % BLOCK_VALUE;
+                var firstBlockValue = 0;
+                if (usedMod > 0.01) {
+                    firstBlockValue = BLOCK_VALUE - usedMod;
+                    if (firstBlockValue > valueToUse) {
+                        firstBlockValue = valueToUse;
                     }
-                    
-                    var blocks = [];
-                    var fullKnives = Math.floor(valueToUse / BLOCK_VALUE);
-                    var leftoverValue = valueToUse - fullKnives * BLOCK_VALUE;
-                    var rowWidth = fullKnives;
-                    
-                    for (var i = 0; i < fullKnives; i++) {
-                        blocks.push({ width: 1, type: 'full' });
-                    }
-                    
-                    if (leftoverValue > 0.01) {
-                        var partialKnives = leftoverValue / BLOCK_VALUE;
-                        var partialWidth = partialKnives;
-                        var partialNumerator = Math.round(partialKnives * c);
-                        blocks.push({
-                            width: partialWidth,
-                            type: 'partial',
-                            numerator: partialNumerator,
-                            denominator: c
-                        });
-                        rowWidth += partialWidth;
-                    }
-                    
-                    rows.push({
-                        cycle: cycles[rowIndex],
-                        blocks: blocks
-                    });
-                    maxWidth = Math.max(maxWidth, rowWidth);
                 }
+
+                if (firstBlockValue > 0.01) {
+                    var firstBlockWidth = firstBlockValue / BLOCK_VALUE;
+                    var firstBlockNumerator = Math.round(firstBlockWidth * c);
+                    blocks.push({
+                        width: firstBlockWidth,
+                        type: 'partial',
+                        numerator: firstBlockNumerator,
+                        denominator: c
+                    });
+                    rowWidth += firstBlockWidth;
+                }
+
+                var remainingAfterFirst = valueToUse - firstBlockValue;
+                var fullKnives = Math.floor(remainingAfterFirst / BLOCK_VALUE);
+
+                for (var i = 0; i < fullKnives; i++) {
+                    blocks.push({ width: 1, type: 'full' });
+                }
+                rowWidth += fullKnives;
+
+                var leftoverValue = remainingAfterFirst - fullKnives * BLOCK_VALUE;
+                if (leftoverValue > 0.01) {
+                    var partialWidth = leftoverValue / BLOCK_VALUE;
+                    var partialNumerator = Math.round(partialWidth * c);
+                    blocks.push({
+                        width: partialWidth,
+                        type: 'partial',
+                        numerator: partialNumerator,
+                        denominator: c
+                    });
+                    rowWidth += partialWidth;
+                }
+
+                rows.push({
+                    cycle: cycles[rowIndex],
+                    blocks: blocks
+                });
+                maxWidth = Math.max(maxWidth, rowWidth);
             }
 
             return {

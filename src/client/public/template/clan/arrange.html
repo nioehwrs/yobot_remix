@@ -567,12 +567,16 @@
             height: 36px;
             border-radius: 2px;
         }
-        .block.full {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .block.partial {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
+        .block.full-1 { background: #99ddff; }
+        .block.partial-1 { background: #c7ecff; }
+        .block.full-2 { background: #98d7b6; }
+        .block.partial-2 { background: #c3ead5; }
+        .block.full-3 { background: #ff9c99; }
+        .block.partial-3 { background: #ffc9c7; }
+        .block.full-4 { background: #ffba84; }
+        .block.partial-4 { background: #ffdcc4; }
+        .block.full-5 { background: #d58eff; }
+        .block.partial-5 { background: #f2c7ff; }
         .boss-cell-wrapper {
             display: flex;
             flex-direction: column;
@@ -713,7 +717,7 @@
                                                     <div class="block-container" :style="{ width: (getBossBlocks(day, boss).maxWidth * 37 - 1) + 'px' }">
                                                         <template v-for="(block, bIndex) in getBossBlocks(day, boss).rows.find(r => r.cycle === cycle).blocks" :key="bIndex">
                                                             <div class="block" 
-                                                                 :class="block.type"
+                                                                 :class="block.type + '-' + boss"
                                                                  :style="{ width: (block.width * 36) + 'px' }"
                                                                  :title="block.type === 'full' ? '完整刀' : ('部分刀: ' + (block.width * 100).toFixed(0) + '%')">
                                                             </div>
