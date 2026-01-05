@@ -577,6 +577,7 @@
         .block.partial-4 { background: #ffdcc4; }
         .block.full-5 { background: #d58eff; }
         .block.partial-5 { background: #f2c7ff; }
+        .block.gray { background: #d9d9d9; }
         .boss-cell-wrapper {
             display: flex;
             flex-direction: column;
@@ -705,12 +706,12 @@
                             </div>
                             <div class="grid-container">
                                 <div class="grid-cycle-column">
-                                    <div class="grid-cycle" v-for="cycle in [23, 24, 25, 26, 27, 28, 29, 30, 31, 32]" :key="'day' + day + '-cycle-' + cycle">
+                                    <div class="grid-cycle" v-for="cycle in getCyclesToShow(day)" :key="'day' + day + '-cycle-' + cycle">
                                         {{ cycle }}
                                     </div>
                                 </div>
                                 <div class="grid-data">
-                                    <div class="grid-row" v-for="cycle in [23, 24, 25, 26, 27, 28, 29, 30, 31, 32]" :key="'day' + day + '-row-' + cycle">
+                                    <div class="grid-row" v-for="cycle in getCyclesToShow(day)" :key="'day' + day + '-row-' + cycle">
                                         <div class="grid-cell" v-for="boss in bosses" :key="'day' + day + '-cell-' + cycle + '-' + boss">
                                             <template v-if="getBossBlocks(day, boss).rows">
                                                 <div class="boss-cell-wrapper" v-if="getBossBlocks(day, boss).rows.find(r => r.cycle === cycle)">
@@ -763,5 +764,5 @@
     </div>
 </body>
 <script>var csrf_token = "{{ session['csrf_token'] }}";</script>
-<script src="{{ url_for('yobot_static', filename='clan/arrange.js', v='4.3.14') }}"></script>
+<script src="{{ url_for('yobot_static', filename='clan/arrange.js', v='4.3.2') }}"></script>
 </html>

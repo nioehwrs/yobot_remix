@@ -485,7 +485,7 @@ var vm = new Vue({
         },
         getBossBlocks(day, boss) {
             if (!this.statsConfig[day] || !this.statsConfig[day][boss]) {
-                return { rows: [], maxWidth: 0 };
+                return { rows: [], maxWidth: 0, remainingValue: 0 };
             }
             var config = this.statsConfig[day][boss];
             var x = config.x || (day === 1 ? 14 : 18);
@@ -493,17 +493,68 @@ var vm = new Vue({
             var b = config.b || 0;
             var c = config.c || 2;
 
-            var cycles = [23, 24, 25, 26, 27, 28, 29, 30, 31, 32];
-            var rows = [];
-            var maxWidth = 0;
-
             var BLOCK_VALUE = 12;
             var rowCapacityValue = a * BLOCK_VALUE + b * BLOCK_VALUE / c;
             var totalValue = x * BLOCK_VALUE;
 
+            var prevDay = day - 1;
+            var prevProgress = null;
+            var startCycle = 23;
+            var grayBlocks = [];
+
+            if (prevDay >= 1) {
+                var prevConfig = this.statsConfig[prevDay] && this.statsConfig[prevDay][boss];
+                if (prevConfig) {
+                    var prevX = prevConfig.x || (prevDay === 1 ? 14 : 18);
+                    var prevA = prevConfig.a || 1;
+                    var prevB = prevConfig.b || 0;
+                    var prevC = prevConfig.c || 2;
+                    var prevRowCapacityValue = prevA * BLOCK_VALUE + prevB * BLOCK_VALUE / prevC;
+                    var prevTotalValue = prevX * BLOCK_VALUE;
+
+                    var fullRows = Math.floor(prevTotalValue / prevRowCapacityValue);
+                    var remainderValue = prevTotalValue % prevRowCapacityValue;
+
+                    if (remainderValue > 0.01) {
+                        prevProgress = fullRows;
+                        startCycle = 23 + fullRows;
+                        var grayValue = remainderValue;
+                        var grayFullKnives = Math.floor(grayValue / BLOCK_VALUE);
+                        for (var i = 0; i < grayFullKnives; i++) {
+                            grayBlocks.push({ width: 1, type: 'gray' });
+                        }
+                        var grayLeftover = grayValue - grayFullKnives * BLOCK_VALUE;
+                        if (grayLeftover > 0.01) {
+                            grayBlocks.push({ width: grayLeftover / BLOCK_VALUE, type: 'gray' });
+                        }
+                    } else {
+                        prevProgress = fullRows;
+                        startCycle = 23 + fullRows;
+                    }
+                }
+            }
+
+            var cycles = [];
+            for (var i = 0; i < 10; i++) {
+                cycles.push(23 + i);
+            }
+            var rows = [];
+            var maxWidth = 0;
+
+            var actualTotalValue = totalValue;
+            if (grayBlocks.length > 0) {
+                var grayTotalValue = grayBlocks.reduce(function(sum, block) {
+                    return sum + block.width * BLOCK_VALUE;
+                }, 0);
+                actualTotalValue = totalValue + grayTotalValue;
+            }
+
             for (var rowIndex = 0; rowIndex < cycles.length; rowIndex++) {
+                var currentCycle = cycles[rowIndex];
+                if (currentCycle < startCycle) continue;
+
                 var usedValue = rowIndex * rowCapacityValue;
-                var remainingValue = totalValue - usedValue;
+                var remainingValue = actualTotalValue - usedValue;
 
                 if (remainingValue <= 0.01) break;
 
@@ -514,6 +565,17 @@ var vm = new Vue({
 
                 var blocks = [];
                 var rowWidth = 0;
+
+                var rowGrayBlocks = [];
+                if (currentCycle === startCycle && grayBlocks.length > 0) {
+                    rowGrayBlocks = grayBlocks;
+                    grayBlocks = [];
+                }
+
+                for (var g = 0; g < rowGrayBlocks.length; g++) {
+                    blocks.push(rowGrayBlocks[g]);
+                    rowWidth += rowGrayBlocks[g].width;
+                }
 
                 var usedMod = (rowIndex * rowCapacityValue) % BLOCK_VALUE;
                 var firstBlockValue = 0;
@@ -558,16 +620,45 @@ var vm = new Vue({
                 }
 
                 rows.push({
-                    cycle: cycles[rowIndex],
+                    cycle: currentCycle,
                     blocks: blocks
                 });
                 maxWidth = Math.max(maxWidth, rowWidth);
             }
 
+            var maxCycle = rows.length > 0 ? rows[rows.length - 1].cycle : 0;
+            var lastRowRemaining = actualTotalValue - (rows.length * rowCapacityValue);
+            if (lastRowRemaining < 0) lastRowRemaining = 0;
+
             return {
                 rows: rows,
-                maxWidth: maxWidth
+                maxWidth: maxWidth,
+                maxCycle: maxCycle,
+                remainingValue: lastRowRemaining,
+                startCycle: startCycle
             };
+        },
+        getStartCycle(day) {
+            if (day === 1) return 23;
+            var startCycles = this.bosses.map(boss => {
+                var result = this.getBossBlocks(day, boss);
+                return result.startCycle || 23;
+            });
+            return Math.min(...startCycles);
+        },
+        getDayRemaining(day, boss) {
+            if (day <= 1) return 0;
+            if (!this.dayStats[day] || !this.dayStats[day][boss]) return 0;
+            return this.dayStats[day][boss].remaining || 0;
+        },
+        saveRemaining(day, boss, value) {
+            if (!this.dayStats[day]) {
+                this.dayStats[day] = {};
+            }
+            if (!this.dayStats[day][boss]) {
+                this.dayStats[day][boss] = {};
+            }
+            this.dayStats[day][boss].remaining = value;
         },
         saveDayStatsData() {
             var thisvue = this;
@@ -608,6 +699,22 @@ var vm = new Vue({
                     this.$set(this.dayStats, day, { locked: false, usePrevious: false });
                 }
             }
+        },
+        getCyclesToShow(day) {
+            var startCycle = this.getStartCycle(day);
+            var cycles = [];
+            for (var boss = 1; boss <= 5; boss++) {
+                var result = this.getBossBlocks(day, boss);
+                if (result.maxCycle > 0) {
+                    cycles.push(result.maxCycle);
+                }
+            }
+            var maxCycle = cycles.length > 0 ? Math.max(...cycles) : startCycle;
+            var resultCycles = [];
+            for (var c = startCycle; c <= maxCycle; c++) {
+                resultCycles.push(c);
+            }
+            return resultCycles;
         }
     },
     watch: {
