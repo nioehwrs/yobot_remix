@@ -3,6 +3,9 @@
 <head>
     <title>排刀列表</title>
     <meta name='viewport' content='width=480' charset="utf-8" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <script src="/yobot-depencency/vue@2.6.11/dist/vue.min.js"></script>
     <script src="/yobot-depencency/axios@0.19.2/dist/axios.min.js"></script>
     <script src="/yobot-depencency/element-ui@2.13.0/lib/index.js"></script>
@@ -177,6 +180,343 @@
         .phase-content {
             padding: 0 4px;
         }
+        .day-section {
+            margin-bottom: 16px;
+        }
+        .day-title {
+            text-align: center;
+            font-size: 15px;
+            font-weight: bold;
+            color: #303133;
+            margin: 12px 0 8px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #67C23A;
+        }
+        .boss-row {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 10px 0;
+        }
+        .boss-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .boss-icon:hover {
+            transform: scale(1.1);
+        }
+        .day-stats {
+            margin-bottom: 24px;
+        }
+        .day-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #303133;
+            margin-bottom: 10px;
+            padding-left: 4px;
+        }
+        .day-stats-layout {
+            display: flex;
+            gap: 8px;
+        }
+        .day-stats-main {
+            flex: 1;
+            min-width: 0;
+        }
+        .boss-header {
+            display: flex;
+            margin-bottom: 0;
+            border-bottom: 2px dashed #d0d7ff;
+        }
+        .boss-header-spacer {
+            width: 50px;
+            flex-shrink: 0;
+        }
+        .boss-header-cell {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 8px 0;
+        }
+        .boss-icon-small {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+        .stats-config-row {
+            display: flex;
+            height: 36px;
+            border-bottom: 1px dashed #d0d7ff;
+        }
+        .stats-config-row:last-child {
+            border-bottom: none;
+        }
+        .stats-config-cell {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            padding: 0 4px;
+        }
+        .config-select {
+            padding: 2px 4px;
+            border: 1px solid #d0d7ff;
+            border-radius: 3px;
+            font-size: 11px;
+            background: #fff;
+            cursor: pointer;
+        }
+        .config-select:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+        .config-label {
+            font-size: 11px;
+            color: #606266;
+            font-weight: 500;
+        }
+        .knife-count-input {
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+        .knife-count-field {
+            width: 30px;
+            padding: 1px 3px;
+            border: 1px solid #d0d7ff;
+            border-right: none;
+            border-radius: 3px 0 0 3px;
+            font-size: 10px;
+            text-align: center;
+            background: #fff;
+            outline: none;
+            line-height: 12px;
+        }
+        .knife-count-field:focus {
+            border-color: #4facfe;
+        }
+        .knife-count-field::-webkit-inner-spin-button,
+        .knife-count-field::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .knife-count-field {
+            -moz-appearance: textfield;
+        }
+        .knife-count-btns {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #d0d7de;
+            border-left: none;
+            border-radius: 0 4px 4px 0;
+            overflow: hidden;
+            background: #f8f9fa;
+            align-items: flex-start;
+        }
+        .knife-count-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 6px;
+            padding: 0;
+            border: none;
+            background: transparent;
+            color: #606266;
+            font-size: 6px;
+            cursor: pointer;
+            line-height: 1;
+            position: relative;
+            transition: background-color 0.15s ease;
+        }
+        .knife-count-btn::before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 3px solid transparent;
+            border-right: 3px solid transparent;
+            transition: border-color 0.15s ease;
+        }
+        .knife-count-btn.increment::before {
+            border-bottom: 3px solid #909399;
+            top: 1px;
+        }
+        .knife-count-btn.decrement::before {
+            border-top: 3px solid #909399;
+            bottom: 1px;
+        }
+        .knife-count-btn:hover {
+            background: #ecf0f1;
+        }
+        .knife-count-btn.increment:hover::before {
+            border-bottom-color: #409eff;
+        }
+        .knife-count-btn.decrement:hover::before {
+            border-top-color: #409eff;
+        }
+        .knife-count-btn:active {
+            background: #dcdfe6;
+        }
+        .config-spacer {
+            width: 4px;
+        }
+        .tail-select {
+            padding: 2px 4px;
+            border: 1px solid #d0d7ff;
+            border-radius: 3px;
+            font-size: 10px;
+            background: #fff;
+            cursor: pointer;
+        }
+        .tail-select.disabled {
+            background: #f5f7fa;
+            color: #c0c4cc;
+            cursor: not-allowed;
+        }
+        .day-stats-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 8px;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e6ecff 100%);
+            border-radius: 8px;
+            border: 1px solid #c7cfff;
+            width: 120px;
+            flex-shrink: 0;
+        }
+        .day-stats-controls.locked {
+            background: linear-gradient(135deg, #fef0f0 0%, #ffe0e0 100%);
+            border-color: #ffcccc;
+        }
+        .day-stats-controls .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 4px;
+        }
+        .control-label {
+            font-size: 12px;
+            color: #606266;
+            font-weight: 500;
+        }
+        .control-value {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .control-value.normal {
+            color: #909399;
+        }
+        .control-value.less {
+            color: #67c23a;
+        }
+        .control-value.more {
+            color: #f56c6c;
+        }
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .checkbox-wrapper .el-checkbox__label {
+            font-size: 12px;
+            padding-left: 4px;
+        }
+        .checkbox-wrapper .el-checkbox__inner {
+            width: 14px;
+            height: 14px;
+        }
+        .checkbox-wrapper.is-disabled {
+            opacity: 0.5;
+        }
+        .stats-config-row {
+            display: flex;
+            height: 32px;
+            border-bottom: 1px dashed #d0d7ff;
+            overflow: hidden;
+        }
+        .stats-config-row:last-child {
+            border-bottom: none;
+        }
+        .stats-config-cell {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            padding: 0 4px;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .config-select {
+            padding: 1px 3px;
+            border: 1px solid #d0d7ff;
+            border-radius: 3px;
+            font-size: 10px;
+            background: #fff;
+            cursor: pointer;
+        }
+        .config-select:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+        .config-label {
+            font-size: 10px;
+            color: #606266;
+            font-weight: 500;
+        }
+        .grid-container {
+            display: flex;
+        }
+        .grid-cycle-column {
+            width: 50px;
+            flex-shrink: 0;
+        }
+        .grid-data {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .grid-row {
+            display: flex;
+            height: 36px;
+            border-bottom: 1px dashed #ebeef5;
+        }
+        .grid-row:last-child {
+            border-bottom: none;
+        }
+        .grid-cell {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f5f7fa;
+            border-left: 1px dashed #d0d7ff;
+        }
+        .grid-cell:first-child {
+            border-left: none;
+        }
+        .grid-cycle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 36px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #303133;
+            border-bottom: 1px dashed #ebeef5;
+        }
+        .grid-cycle:last-child {
+            border-bottom: none;
+        }
         .phase-empty {
             text-align: center;
             color: #909399;
@@ -213,6 +553,41 @@
         }
         .insert-btn:active {
             transform: scale(0.98);
+        }
+        .block-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 1px;
+            width: 100%;
+            height: 100%;
+            padding: 0 4px;
+        }
+        .block {
+            height: 36px;
+            border-radius: 2px;
+        }
+        .block.full {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .block.partial {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .boss-cell-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 0;
+            margin: 0;
+            border-radius: 4px;
+            background: rgba(248, 250, 252, 0.8);
+        }
+        .boss-cell-wrapper:hover {
+            background: rgba(230, 240, 255, 0.9);
+        }
+        .boss-cell-wrapper.empty {
+            visibility: hidden;
         }
     </style>
 </head>
@@ -261,9 +636,118 @@
             </el-tab-pane>
             <el-tab-pane>
                 <span slot="label">
-                    <i class="el-icon-s-data"></i> 伤害统计
+                    <i class="el-icon-s-data"></i> 排刀统计
                 </span>
-                <p style="text-align:center;color:#909399;">伤害统计功能开发中</p>
+                {% raw %}
+                <div class="boss-header">
+                    <div class="boss-header-spacer" style="width: 50px; flex-shrink: 0;"></div>
+                    <div class="boss-header-cell" v-for="boss in bosses" :key="'header-boss-' + boss">
+                        <img :src="'/yobot-depencency/yocool@final/princessadventure/boss_icon/' + bossData[boss].icon_id + '.webp'"
+                             class="boss-icon-small"
+                             :title="boss + '号Boss'">
+                    </div>
+                    <div class="boss-header-spacer" style="width: 120px; flex-shrink: 0;"></div>
+                </div>
+                <div v-for="day in days" :key="'day-stats-' + day" class="day-stats">
+                    <div class="day-title">Day{{ day }}</div>
+                    <div class="day-stats-layout">
+                        <div class="day-stats-main">
+                            <div class="stats-config-row">
+                                <div class="grid-cycle-column" style="width: 50px; flex-shrink: 0;"></div>
+                                <div class="stats-config-cell" v-for="boss in bosses" :key="'config-' + day + '-' + boss">
+                                    <div class="knife-count-input">
+                                        <input type="number" class="knife-count-field" :id="'x-input-' + day + '-' + boss" 
+                                               :value="statsConfig[day] && statsConfig[day][boss] ? statsConfig[day][boss].x : (day === 1 ? 14 : 18)"
+                                               @blur="updateStats(day, boss, 'x', $event.target.value)"
+                                               :disabled="(dayStats[day] && dayStats[day].locked) || (dayStats[day] && dayStats[day].usePrevious)"
+                                               min="5" max="40">
+                                        <div class="knife-count-btns">
+                                            <button type="button" class="knife-count-btn increment" 
+                                                    @click="updateStats(day, boss, 'x', (statsConfig[day] && statsConfig[day][boss] && statsConfig[day][boss].x || (day === 1 ? 14 : 18)) + 1)"
+                                                    :disabled="(dayStats[day] && dayStats[day].locked) || (dayStats[day] && dayStats[day].usePrevious)"></button>
+                                            <button type="button" class="knife-count-btn decrement" 
+                                                    @click="updateStats(day, boss, 'x', (statsConfig[day] && statsConfig[day][boss] && statsConfig[day][boss].x || (day === 1 ? 14 : 18)) - 1)"
+                                                    :disabled="(dayStats[day] && dayStats[day].locked) || (dayStats[day] && dayStats[day].usePrevious)"></button>
+                                        </div>
+                                        <span class="config-label">刀</span>
+                                    </div>
+                                    <div class="config-spacer"></div>
+                                    <select class="config-select" :id="'a-select-' + day + '-' + boss" 
+                                            @change="updateStats(day, boss, 'a', $event.target.value)"
+                                            :disabled="(dayStats[day] && dayStats[day].locked) || (dayStats[day] && dayStats[day].usePrevious)">
+                                        <option v-for="n in 6" :value="n" :selected="(statsConfig[day] && statsConfig[day][boss] && statsConfig[day][boss].a) ? statsConfig[day][boss].a == n : n == 1">{{ n }}</option>
+                                    </select>
+                                    <span class="config-label">+</span>
+                                    <select class="config-select" :id="'b-select-' + day + '-' + boss" 
+                                            @change="updateStats(day, boss, 'b', $event.target.value)"
+                                            :disabled="(dayStats[day] && dayStats[day].locked) || (dayStats[day] && dayStats[day].usePrevious)">
+                                        <option v-for="n in [0,1,2,3]" :value="n" :selected="(statsConfig[day] && statsConfig[day][boss] && statsConfig[day][boss].b) ? statsConfig[day][boss].b == n : n == 0">{{ n }}</option>
+                                    </select>
+                                    <span class="config-label">/</span>
+                                    <select class="config-select" :id="'c-select-' + day + '-' + boss" 
+                                            @change="updateStats(day, boss, 'c', $event.target.value)"
+                                            :disabled="(dayStats[day] && dayStats[day].locked) || (dayStats[day] && dayStats[day].usePrevious)">
+                                        <option v-for="n in [2,3,4]" :value="n" :selected="(statsConfig[day] && statsConfig[day][boss] && statsConfig[day][boss].c) ? statsConfig[day][boss].c == n : n == 2">{{ n }}</option>
+                                    </select>
+                                    <span class="config-label">刀</span>
+                                    <select class="tail-select" :id="'tail-select-' + day + '-' + boss" 
+                                            :class="{ disabled: !statsConfig[day] || !statsConfig[day][boss] || statsConfig[day][boss].b > 0 || (dayStats[day] && dayStats[day].locked) || (dayStats[day] && dayStats[day].usePrevious) }"
+                                            :disabled="!statsConfig[day] || !statsConfig[day][boss] || statsConfig[day][boss].b > 0 || (dayStats[day] && dayStats[day].locked) || (dayStats[day] && dayStats[day].usePrevious)"
+                                            @change="updateStats(day, boss, 'tail', $event.target.value)">
+                                        <option value="full" :selected="!statsConfig[day] || !statsConfig[day][boss] || statsConfig[day][boss].tail == 'full'">满补</option>
+                                        <option value="tail" :selected="statsConfig[day] && statsConfig[day][boss] && statsConfig[day][boss].tail == 'tail'">出尾</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid-container">
+                                <div class="grid-cycle-column">
+                                    <div class="grid-cycle" v-for="cycle in [23, 24, 25, 26, 27, 28, 29, 30, 31, 32]" :key="'day' + day + '-cycle-' + cycle">
+                                        {{ cycle }}
+                                    </div>
+                                </div>
+                                <div class="grid-data">
+                                    <div class="grid-row" v-for="cycle in [23, 24, 25, 26, 27, 28, 29, 30, 31, 32]" :key="'day' + day + '-row-' + cycle">
+                                        <div class="grid-cell" v-for="boss in bosses" :key="'day' + day + '-cell-' + cycle + '-' + boss">
+                                            <template v-if="getBossBlocks(day, boss).rows">
+                                                <div class="boss-cell-wrapper" v-if="getBossBlocks(day, boss).rows.find(r => r.cycle === cycle)">
+                                                    <div class="block-container" :style="{ width: (getBossBlocks(day, boss).maxWidth * 37 - 1) + 'px' }">
+                                                        <template v-for="(block, bIndex) in getBossBlocks(day, boss).rows.find(r => r.cycle === cycle).blocks" :key="bIndex">
+                                                            <div class="block" 
+                                                                 :class="block.type"
+                                                                 :style="{ width: (block.width * 36) + 'px' }"
+                                                                 :title="block.type === 'full' ? '完整刀' : ('部分刀: ' + (block.width * 100).toFixed(0) + '%')">
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="day-stats-controls" :class="{ locked: dayStats[day] && dayStats[day].locked }">
+                            <div class="control-row">
+                                <span class="control-label">预计刀数</span>
+                                <span class="control-value normal">{{ day === 1 ? 70 : 90 }}</span>
+                            </div>
+                            <div class="control-row">
+                                <span class="control-label">当前刀数</span>
+                                <span class="control-value" :class="getDayFClass(day)">{{ getDayFTotal(day) }}</span>
+                            </div>
+                            <div class="control-row checkbox-wrapper">
+                                <el-checkbox :value="dayStats[day] && dayStats[day].locked" @input="toggleDayLock(day)" size="small">锁定当日</el-checkbox>
+                            </div>
+                            <div class="control-row checkbox-wrapper" v-if="day > 1" :class="{ 'is-disabled': (dayStats[day] && dayStats[day].locked) || day <= 2 }">
+                                <el-checkbox :value="dayStats[day] && dayStats[day].usePrevious" 
+                                             @input="toggleUsePrevious(day)" 
+                                             :disabled="(dayStats[day] && dayStats[day].locked) || day <= 2"
+                                             size="small">使用前一天数据</el-checkbox>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endraw %}
             </el-tab-pane>
             <el-tab-pane>
                 <span slot="label">
@@ -275,4 +759,5 @@
     </div>
 </body>
 <script>var csrf_token = "{{ session['csrf_token'] }}";</script>
-<script src="{{ url_for('yobot_static', filename='clan/arrange.js') }}"></script>
+<script src="{{ url_for('yobot_static', filename='clan/arrange.js', v='4.3.14') }}"></script>
+</html>
