@@ -520,7 +520,7 @@ var vm = new Vue({
 
                     if (P > 0.01) {
                         var P_width = P / BLOCK_VALUE;
-                        blocks.push({ width: P_width, type: 'full', numerator: Math.round(P_width * c), denominator: c });
+                        blocks.push({ width: P_width, type: P >= BLOCK_VALUE - 0.01 ? 'full' : 'partial', numerator: Math.round(P_width * c), denominator: c });
                         rowWidth += P_width;
                     }
 
@@ -665,7 +665,7 @@ var vm = new Vue({
 
                     if (P > 0.01) {
                         var P_width = P / BLOCK_VALUE;
-                        rowBlocks.push({ width: P_width, type: 'full', numerator: Math.round(P_width * c), denominator: c });
+                        rowBlocks.push({ width: P_width, type: P >= BLOCK_VALUE - 0.01 ? 'full' : 'partial', numerator: Math.round(P_width * c), denominator: c });
                         rowW += P_width;
                     }
 
