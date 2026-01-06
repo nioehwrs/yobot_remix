@@ -720,7 +720,7 @@ var vm = new Vue({
                     maxWidth = Math.max(maxWidth, finalRowWidth);
                 }
 
-                fullCycles = fullCycles_prev + Math.floor((F + K_prev) / D);
+                fullCycles = fullCycles_prev + Math.floor((F + K_prev) / D) - 1;
                 remainingValue = K;
             }
 
