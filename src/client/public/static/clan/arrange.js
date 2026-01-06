@@ -586,7 +586,7 @@ var vm = new Vue({
                 var fullCycles_prev = 0;
 
                 if (prevConfig) {
-                    var prevX = prevConfig.x || (prevDay === 1 ? 14 : 18);
+                    var prevX = prevConfig.x || 18;
                     var prevA = prevConfig.a || 1;
                     var prevB = prevConfig.b || 0;
                     var prevC = prevConfig.c || 2;
@@ -596,7 +596,7 @@ var vm = new Vue({
                     K_prev = F_prev % D_prev;
                 }
 
-                startCycle = fullCycles_prev + 23;
+                startCycle = fullCycles_prev + 23 + (day - 2);
 
                 var totalValue = F + K_prev;
                 var J = Math.floor(totalValue / D) - 1;
