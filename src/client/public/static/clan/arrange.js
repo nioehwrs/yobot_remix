@@ -656,8 +656,7 @@ var vm = new Vue({
                     var rowBlocks = [];
                     var rowW = 0;
 
-                    var usedMod = ((D * (i + 1) + K_prev) - D_prev * fullCycles_prev) % BLOCK_VALUE;
-                    if (usedMod < 0) usedMod += BLOCK_VALUE;
+                    var usedMod = (D * (i + 1) - K_prev) % BLOCK_VALUE;
                     var P = BLOCK_VALUE - usedMod;
                     var remainingAfterP = D - P;
                     var Q = Math.floor(remainingAfterP / BLOCK_VALUE);
@@ -689,8 +688,7 @@ var vm = new Vue({
                     var finalBlocks = [];
                     var finalRowWidth = 0;
 
-                    var usedModFinal = ((D * (J + 1) + K_prev) - D_prev * fullCycles_prev) % BLOCK_VALUE;
-                    if (usedModFinal < 0) usedModFinal += BLOCK_VALUE;
+                    var usedModFinal = (D * (J + 1) - K_prev) % BLOCK_VALUE;
                     var S2 = Math.min(BLOCK_VALUE - usedModFinal, K);
                     var remainingAfterS2 = K - S2;
                     var T2 = Math.floor(remainingAfterS2 / BLOCK_VALUE);
