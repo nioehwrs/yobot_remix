@@ -32,7 +32,8 @@ var vm = new Vue({
         days: CONFIG.DAYS,
         bosses: CONFIG.BOSSES,
         statsConfig: {},
-        dayStats: {}
+        dayStats: {},
+        dayResult: {}
     },
     mounted() {
         document.title = '排刀列表 - 公会战';
@@ -330,10 +331,12 @@ var vm = new Vue({
             }
             
             var currentConfig = this.statsConfig[day][boss];
+            var shouldRecalculate = false;
             
             if (field === 'b') {
                 var newB = parseInt(value) || 0;
                 this.$set(currentConfig, 'b', newB);
+                shouldRecalculate = true;
                 if (newB >= currentConfig.c) {
                     this.$set(currentConfig, 'c', newB + 1);
                 }
@@ -341,21 +344,36 @@ var vm = new Vue({
             } else if (field === 'c') {
                 var newC = parseInt(value) || 2;
                 this.$set(currentConfig, 'c', newC);
+                shouldRecalculate = true;
                 if (currentConfig.b >= newC) {
                     this.$set(currentConfig, 'b', newC - 1);
                 }
                 document.getElementById('b-select-' + day + '-' + boss).value = currentConfig.b;
             } else if (field === 'a') {
                 this.$set(currentConfig, 'a', parseInt(value) || 1);
+                shouldRecalculate = true;
             } else if (field === 'x') {
                 var newX = parseInt(value) || 20;
                 if (newX < 5) newX = 5;
                 if (newX > 40) newX = 40;
                 this.$set(currentConfig, 'x', newX);
+                shouldRecalculate = true;
                 document.getElementById('x-input-' + day + '-' + boss).value = newX;
             } else if (field === 'tail') {
                 this.$set(currentConfig, 'tail', value);
             }
+
+            if (shouldRecalculate) {
+                for (var clearDay = 1; clearDay <= 5; clearDay++) {
+                    if (this.dayResult[clearDay]) {
+                        this.$delete(this.dayResult[clearDay], boss);
+                    }
+                }
+                for (var calcDay = 1; calcDay <= 5; calcDay++) {
+                    this.getBossBlocks(calcDay, boss);
+                }
+            }
+
             this.saveStatsData();
         },
         saveStatsData() {
@@ -485,7 +503,7 @@ var vm = new Vue({
         },
         getBossBlocks(day, boss) {
             if (!this.statsConfig[day] || !this.statsConfig[day][boss]) {
-                return { rows: [], maxWidth: 0, remainingValue: 0 };
+                return null;
             }
             var config = this.statsConfig[day][boss];
             var x = config.x || (day === 1 ? 14 : 18);
@@ -493,253 +511,287 @@ var vm = new Vue({
             var b = config.b || 0;
             var c = config.c || 2;
 
+            if (!this.dayResult[day]) {
+                this.dayResult[day] = {};
+            }
+
+            if (this.dayResult[day][boss]) {
+                return this.dayResult[day][boss];
+            }
+
             var BLOCK_VALUE = 12;
             var F = x * BLOCK_VALUE;
             var D = a * BLOCK_VALUE + b * BLOCK_VALUE / c;
 
+            var result;
+            if (day === 1) {
+                result = this.calcDay1(boss, x, a, b, c);
+            } else {
+                result = this.calcDayN(boss, day, x, a, b, c);
+            }
+
+            this.$set(this.dayResult[day], boss, result);
+
+            if (day === 5 && boss === 3) {
+                console.log('=== Day 1-5 Boss 3 dayResult ===');
+                for (var d = 1; d <= 5; d++) {
+                    if (this.dayResult[d] && this.dayResult[d][3]) {
+                        console.log('Day ' + d + ':', JSON.parse(JSON.stringify(this.dayResult[d][3])));
+                    }
+                }
+            }
+
+            return result;
+        },
+        calcDay1(boss, x, a, b, c) {
+            var BLOCK_VALUE = 12;
+            var F = x * BLOCK_VALUE;
+            var D = a * BLOCK_VALUE + b * BLOCK_VALUE / c;
+
+            var result = {
+                D: D, F: F,
+                G: Math.floor(F / D),
+                H: F % D,
+                J: 23,
+                rows: [],
+                maxWidth: 0,
+                maxCycle: 0
+            };
+
             var rows = [];
             var maxWidth = 0;
-            var startCycle = 23;
-            var remainingValue = 0;
-            var fullCycles = 0;
 
-            if (day === 1) {
-                var J = Math.floor(F / D);
-                var K = F % D;
-
-                for (var i = 0; i < J; i++) {
-                    var cycle = startCycle + i;
-                    var blocks = [];
-                    var rowWidth = 0;
-
-                    var usedMod = (D * i) % BLOCK_VALUE;
-                    var P = BLOCK_VALUE - usedMod;
-                    var remainingAfterP = D - P;
-                    var Q = Math.floor(remainingAfterP / BLOCK_VALUE);
-                    var R = remainingAfterP % BLOCK_VALUE;
-
-                    if (P > 0.01) {
-                        var P_width = P / BLOCK_VALUE;
-                        blocks.push({ width: P_width, type: P >= BLOCK_VALUE - 0.01 ? 'full' : 'partial', numerator: Math.round(P_width * c), denominator: c });
-                        rowWidth += P_width;
-                    }
-
-                    for (var qi = 0; qi < Q; qi++) {
-                        blocks.push({ width: 1, type: 'full' });
-                        rowWidth += 1;
-                    }
-
-                    if (R > 0.01) {
-                        var R_width = R / BLOCK_VALUE;
-                        blocks.push({ width: R_width, type: 'partial', numerator: Math.round(R_width * c), denominator: c });
-                        rowWidth += R_width;
-                    }
-
-                    rows.push({ cycle: cycle, blocks: blocks });
-                    maxWidth = Math.max(maxWidth, rowWidth);
-                }
-
-                if (K > 0.01) {
-                    var finalCycle = startCycle + J;
-                    var blocks = [];
-                    var rowWidth = 0;
-
-                    var usedMod = (D * J) % BLOCK_VALUE;
-                    var S = Math.min(BLOCK_VALUE - usedMod, K);
-                    var remainingAfterS = K - S;
-                    var T = Math.floor(remainingAfterS / BLOCK_VALUE);
-                    var U = remainingAfterS % BLOCK_VALUE;
-
-                    if (S > 0.01) {
-                        var S_width = S / BLOCK_VALUE;
-                        if (S >= BLOCK_VALUE - 0.01) {
-                            blocks.push({ width: 1, type: 'full' });
-                            rowWidth += 1;
-                        } else {
-                            blocks.push({ width: S_width, type: 'partial', numerator: Math.round(S_width * c), denominator: c });
-                            rowWidth += S_width;
-                        }
-                    }
-
-                    for (var ti = 0; ti < T; ti++) {
-                        blocks.push({ width: 1, type: 'full' });
-                        rowWidth += 1;
-                    }
-
-                    if (U > 0.01) {
-                        var U_width = U / BLOCK_VALUE;
-                        blocks.push({ width: U_width, type: 'partial', numerator: Math.round(U_width * c), denominator: c });
-                        rowWidth += U_width;
-                    }
-
-                    rows.push({ cycle: finalCycle, blocks: blocks });
-                    maxWidth = Math.max(maxWidth, rowWidth);
-                }
-
-                fullCycles = J;
-                remainingValue = K;
-            } else {
-                var prevDay = day - 1;
-                var prevConfig = this.statsConfig[prevDay] && this.statsConfig[prevDay][boss];
-                var K_prev = 0;
-                var D_prev = 0;
-                var fullCycles_prev = 0;
-
-                if (prevConfig) {
-                    var prevX = prevConfig.x || 18;
-                    var prevA = prevConfig.a || 1;
-                    var prevB = prevConfig.b || 0;
-                    var prevC = prevConfig.c || 2;
-                    var F_prev = prevX * BLOCK_VALUE;
-                    D_prev = prevA * BLOCK_VALUE + prevB * BLOCK_VALUE / prevC;
-                    fullCycles_prev = Math.floor(F_prev / D_prev);
-                    K_prev = F_prev % D_prev;
-                }
-
-                startCycle = fullCycles_prev + 23 + (day - 2);
-
-                var totalValue = F + K_prev;
-                var J = Math.floor(totalValue / D) - 1;
-                var K = totalValue % D;
-                var H = D - K_prev;
-
-                var initialCycle = startCycle;
+            for (var i = 0; i < result.G; i++) {
+                var cycle = result.J + i;
                 var blocks = [];
                 var rowWidth = 0;
 
-                var S = Math.min(BLOCK_VALUE - ((D_prev * fullCycles_prev) % BLOCK_VALUE), K_prev);
-                var remainingAfterS = K_prev - S;
+                var P = BLOCK_VALUE - ((D * i - 1) % BLOCK_VALUE) - 1;
+                var remainingAfterP = D - P;
+                var Q = Math.floor(remainingAfterP / BLOCK_VALUE);
+                var R = remainingAfterP % BLOCK_VALUE;
+
+                if (P > 0.01) {
+                    var P_width = P / BLOCK_VALUE;
+                    blocks.push({ width: P_width, type: P >= BLOCK_VALUE - 0.01 ? 'full' : 'partial', numerator: Math.round(P_width * c), denominator: c });
+                    rowWidth += P_width;
+                }
+
+                for (var qi = 0; qi < Q; qi++) {
+                    blocks.push({ width: 1, type: 'full' });
+                    rowWidth += 1;
+                }
+
+                if (R > 0.01) {
+                    var R_width = R / BLOCK_VALUE;
+                    blocks.push({ width: R_width, type: 'partial', numerator: Math.round(R_width * c), denominator: c });
+                    rowWidth += R_width;
+                }
+
+                rows.push({ cycle: cycle, blocks: blocks });
+                maxWidth = Math.max(maxWidth, rowWidth);
+            }
+
+            if (result.H > 0.01) {
+                var finalCycle = result.J + result.G;
+                var blocks = [];
+                var rowWidth = 0;
+
+                var S = Math.min(BLOCK_VALUE - ((D * result.G - 1) % BLOCK_VALUE) - 1, result.H);
+                var remainingAfterS = result.H - S;
                 var T = Math.floor(remainingAfterS / BLOCK_VALUE);
                 var U = remainingAfterS % BLOCK_VALUE;
 
                 if (S > 0.01) {
+                    var S_width = S / BLOCK_VALUE;
                     if (S >= BLOCK_VALUE - 0.01) {
-                        blocks.push({ width: 1, type: 'gray' });
+                        blocks.push({ width: 1, type: 'full' });
                         rowWidth += 1;
                     } else {
-                        var S_width = S / BLOCK_VALUE;
-                        blocks.push({ width: S_width, type: 'gray' });
+                        blocks.push({ width: S_width, type: 'partial', numerator: Math.round(S_width * c), denominator: c });
                         rowWidth += S_width;
                     }
                 }
 
                 for (var ti = 0; ti < T; ti++) {
-                    blocks.push({ width: 1, type: 'gray' });
+                    blocks.push({ width: 1, type: 'full' });
                     rowWidth += 1;
                 }
 
                 if (U > 0.01) {
                     var U_width = U / BLOCK_VALUE;
-                    blocks.push({ width: U_width, type: 'gray' });
+                    blocks.push({ width: U_width, type: 'partial', numerator: Math.round(U_width * c), denominator: c });
                     rowWidth += U_width;
                 }
 
-                var Y = Math.floor(H / BLOCK_VALUE);
-                var Z = H % BLOCK_VALUE;
-
-                for (var yi = 0; yi < Y; yi++) {
-                    blocks.push({ width: 1, type: 'full' });
-                    rowWidth += 1;
-                }
-
-                if (Z > 0.01) {
-                    var Z_width = Z / BLOCK_VALUE;
-                    blocks.push({ width: Z_width, type: 'partial', numerator: Math.round(Z_width * c), denominator: c });
-                    rowWidth += Z_width;
-                }
-
-                rows.push({ cycle: initialCycle, blocks: blocks });
+                rows.push({ cycle: finalCycle, blocks: blocks });
                 maxWidth = Math.max(maxWidth, rowWidth);
-
-                for (var i = 0; i < J; i++) {
-                    var cycle = startCycle + 1 + i;
-                    var rowBlocks = [];
-                    var rowW = 0;
-
-                    var usedMod = (D * (i + 1) - K_prev) % BLOCK_VALUE;
-                    var P = BLOCK_VALUE - usedMod;
-                    var remainingAfterP = D - P;
-                    var Q = Math.floor(remainingAfterP / BLOCK_VALUE);
-                    var R = remainingAfterP % BLOCK_VALUE;
-
-                    if (P > 0.01) {
-                        var P_width = P / BLOCK_VALUE;
-                        rowBlocks.push({ width: P_width, type: P >= BLOCK_VALUE - 0.01 ? 'full' : 'partial', numerator: Math.round(P_width * c), denominator: c });
-                        rowW += P_width;
-                    }
-
-                    for (var qi = 0; qi < Q; qi++) {
-                        rowBlocks.push({ width: 1, type: 'full' });
-                        rowW += 1;
-                    }
-
-                    if (R > 0.01) {
-                        var R_width = R / BLOCK_VALUE;
-                        rowBlocks.push({ width: R_width, type: 'partial', numerator: Math.round(R_width * c), denominator: c });
-                        rowW += R_width;
-                    }
-
-                    rows.push({ cycle: cycle, blocks: rowBlocks });
-                    maxWidth = Math.max(maxWidth, rowW);
-                }
-
-                if (K > 0.01) {
-                    var finalCycle = startCycle + 1 + J;
-                    var finalBlocks = [];
-                    var finalRowWidth = 0;
-
-                    var usedModFinal = (D * (J + 1) - K_prev) % BLOCK_VALUE;
-                    var S2 = Math.min(BLOCK_VALUE - usedModFinal, K);
-                    var remainingAfterS2 = K - S2;
-                    var T2 = Math.floor(remainingAfterS2 / BLOCK_VALUE);
-                    var U2 = remainingAfterS2 % BLOCK_VALUE;
-
-                    if (S2 > 0.01) {
-                        if (S2 >= BLOCK_VALUE - 0.01) {
-                            finalBlocks.push({ width: 1, type: 'full' });
-                            finalRowWidth += 1;
-                        } else {
-                            var S2_width = S2 / BLOCK_VALUE;
-                            finalBlocks.push({ width: S2_width, type: 'partial', numerator: Math.round(S2_width * c), denominator: c });
-                            finalRowWidth += S2_width;
-                        }
-                    }
-
-                    for (var t2i = 0; t2i < T2; t2i++) {
-                        finalBlocks.push({ width: 1, type: 'full' });
-                        finalRowWidth += 1;
-                    }
-
-                    if (U2 > 0.01) {
-                        var U2_width = U2 / BLOCK_VALUE;
-                        finalBlocks.push({ width: U2_width, type: 'partial', numerator: Math.round(U2_width * c), denominator: c });
-                        finalRowWidth += U2_width;
-                    }
-
-                    rows.push({ cycle: finalCycle, blocks: finalBlocks });
-                    maxWidth = Math.max(maxWidth, finalRowWidth);
-                }
-
-                fullCycles = fullCycles_prev + Math.floor((F + K_prev) / D) - 1;
-                remainingValue = K;
             }
 
-            var maxCycle = rows.length > 0 ? rows[rows.length - 1].cycle : 0;
+            result.rows = rows;
+            result.maxWidth = maxWidth;
+            result.maxCycle = rows.length > 0 ? rows[rows.length - 1].cycle : 0;
 
-            return {
-                rows: rows,
-                maxWidth: maxWidth,
-                maxCycle: maxCycle,
-                remainingValue: remainingValue,
-                startCycle: startCycle,
-                fullCycles: fullCycles
+            return result;
+        },
+        calcDayN(boss, day, x, a, b, c) {
+            var BLOCK_VALUE = 12;
+            var F = x * BLOCK_VALUE;
+            var D = a * BLOCK_VALUE + b * BLOCK_VALUE / c;
+
+            var fullCyclesPrev = 0;
+            for (var d = 1; d < day; d++) {
+                if (this.dayResult[d] && this.dayResult[d][boss]) {
+                    fullCyclesPrev += this.dayResult[d][boss].G;
+                }
+            }
+
+            var prevDay = day - 1;
+            var HPrev = 0;
+            if (this.dayResult[prevDay] && this.dayResult[prevDay][boss]) {
+                HPrev = this.dayResult[prevDay][boss].H;
+            }
+
+            var J = fullCyclesPrev + 22 + (day - 1);
+            var G = Math.floor((F + HPrev) / D) - 1;
+            var K = D - HPrev;
+            var H = (F + HPrev) % D;
+
+            var result = {
+                D: D, F: F, G: G, H: H, J: J, K: K,
+                rows: [],
+                maxWidth: 0,
+                maxCycle: 0
             };
+
+            var rows = [];
+            var maxWidth = 0;
+
+            var blocks = [];
+            var rowWidth = 0;
+
+            var S = Math.min(BLOCK_VALUE - ((D * (J + 1) - HPrev - 1) % BLOCK_VALUE) - 1, HPrev);
+            var remainingAfterS = HPrev - S;
+            var T = Math.floor(remainingAfterS / BLOCK_VALUE);
+            var U = remainingAfterS % BLOCK_VALUE;
+
+            if (S > 0.01) {
+                var S_width = S / BLOCK_VALUE;
+                if (S >= BLOCK_VALUE - 0.01) {
+                    blocks.push({ width: 1, type: 'gray' });
+                    rowWidth += 1;
+                } else {
+                    blocks.push({ width: S_width, type: 'gray' });
+                    rowWidth += S_width;
+                }
+            }
+
+            for (var ti = 0; ti < T; ti++) {
+                blocks.push({ width: 1, type: 'gray' });
+                rowWidth += 1;
+            }
+
+            if (U > 0.01) {
+                var U_width = U / BLOCK_VALUE;
+                blocks.push({ width: U_width, type: 'gray' });
+                rowWidth += U_width;
+            }
+
+            var Y = Math.floor(K / BLOCK_VALUE);
+            var Z = K % BLOCK_VALUE;
+
+            for (var yi = 0; yi < Y; yi++) {
+                blocks.push({ width: 1, type: 'full' });
+                rowWidth += 1;
+            }
+
+            if (Z > 0.01) {
+                var Z_width = Z / BLOCK_VALUE;
+                blocks.push({ width: Z_width, type: 'partial', numerator: Math.round(Z_width * c), denominator: c });
+                rowWidth += Z_width;
+            }
+
+            rows.push({ cycle: J, blocks: blocks });
+            maxWidth = Math.max(maxWidth, rowWidth);
+
+            for (var i = 0; i < G; i++) {
+                var cycle = J + 1 + i;
+                var rowBlocks = [];
+                var rowW = 0;
+
+                var P = BLOCK_VALUE - ((D * (i + 1) - HPrev - 1) % BLOCK_VALUE) - 1;
+                var remainingAfterP = D - P;
+                var Q = Math.floor(remainingAfterP / BLOCK_VALUE);
+                var R = remainingAfterP % BLOCK_VALUE;
+
+                if (P > 0.01) {
+                    var P_width = P / BLOCK_VALUE;
+                    rowBlocks.push({ width: P_width, type: P >= BLOCK_VALUE - 0.01 ? 'full' : 'partial', numerator: Math.round(P_width * c), denominator: c });
+                    rowW += P_width;
+                }
+
+                for (var qi = 0; qi < Q; qi++) {
+                    rowBlocks.push({ width: 1, type: 'full' });
+                    rowW += 1;
+                }
+
+                if (R > 0.01) {
+                    var R_width = R / BLOCK_VALUE;
+                    rowBlocks.push({ width: R_width, type: 'partial', numerator: Math.round(R_width * c), denominator: c });
+                    rowW += R_width;
+                }
+
+                rows.push({ cycle: cycle, blocks: rowBlocks });
+                maxWidth = Math.max(maxWidth, rowW);
+            }
+
+            if (H > 0.01) {
+                var finalCycle = J + 1 + G;
+                var finalBlocks = [];
+                var finalRowWidth = 0;
+
+                var S2 = Math.min(BLOCK_VALUE - ((D * (G + 1) - HPrev - 1) % BLOCK_VALUE) - 1, H);
+                var remainingAfterS2 = H - S2;
+                var V = Math.floor(remainingAfterS2 / BLOCK_VALUE);
+                var U2 = remainingAfterS2 % BLOCK_VALUE;
+
+                if (S2 > 0.01) {
+                    var S2_width = S2 / BLOCK_VALUE;
+                    if (S2 >= BLOCK_VALUE - 0.01) {
+                        finalBlocks.push({ width: 1, type: 'full' });
+                        finalRowWidth += 1;
+                    } else {
+                        finalBlocks.push({ width: S2_width, type: 'partial', numerator: Math.round(S2_width * c), denominator: c });
+                        finalRowWidth += S2_width;
+                    }
+                }
+
+                for (var vi = 0; vi < V; vi++) {
+                    finalBlocks.push({ width: 1, type: 'full' });
+                    finalRowWidth += 1;
+                }
+
+                if (U2 > 0.01) {
+                    var U2_width = U2 / BLOCK_VALUE;
+                    finalBlocks.push({ width: U2_width, type: 'partial', numerator: Math.round(U2_width * c), denominator: c });
+                    finalRowWidth += U2_width;
+                }
+
+                rows.push({ cycle: finalCycle, blocks: finalBlocks });
+                maxWidth = Math.max(maxWidth, finalRowWidth);
+            }
+
+            result.rows = rows;
+            result.maxWidth = maxWidth;
+            result.maxCycle = rows.length > 0 ? rows[rows.length - 1].cycle : 0;
+
+            return result;
         },
         getStartCycle(day) {
             if (day === 1) return 23;
             var startCycles = this.bosses.map(boss => {
                 var result = this.getBossBlocks(day, boss);
-                return result.startCycle || 23;
+                return result ? result.J : 23;
             });
             return Math.min(...startCycles);
         },
@@ -802,7 +854,7 @@ var vm = new Vue({
             var cycles = [];
             for (var boss = 1; boss <= 5; boss++) {
                 var result = this.getBossBlocks(day, boss);
-                if (result.maxCycle > 0) {
+                if (result && result.maxCycle > 0) {
                     cycles.push(result.maxCycle);
                 }
             }
@@ -817,9 +869,33 @@ var vm = new Vue({
     watch: {
         statsConfig: {
             handler(newStatsConfig, oldStatsConfig) {
-                for (var day = 2; day <= 5; day++) {
+                for (var day = 1; day <= 5; day++) {
                     if (this.dayStats[day] && this.dayStats[day].usePrevious) {
                         this.syncFromPreviousDay(day);
+                    }
+                }
+
+                if (oldStatsConfig) {
+                    for (var d = 1; d <= 5; d++) {
+                        for (var boss = 1; boss <= 5; boss++) {
+                            var oldCfg = oldStatsConfig[d] && oldStatsConfig[d][boss];
+                            var newCfg = newStatsConfig[d] && newStatsConfig[d][boss];
+                            if (oldCfg && newCfg) {
+                                var oldX = oldCfg.x || (d === 1 ? 14 : 18);
+                                var newX = newCfg.x || (d === 1 ? 14 : 18);
+                                if (oldX !== newX || oldCfg.a !== newCfg.a || 
+                                    oldCfg.b !== newCfg.b || oldCfg.c !== newCfg.c) {
+                                    for (var clearDay = 1; clearDay <= 5; clearDay++) {
+                                        if (this.dayResult[clearDay]) {
+                                            this.$delete(this.dayResult[clearDay], boss);
+                                        }
+                                    }
+                                    for (var calcDay = 1; calcDay <= 5; calcDay++) {
+                                        this.getBossBlocks(calcDay, boss);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             },

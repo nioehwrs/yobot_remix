@@ -577,7 +577,7 @@
         .block.partial-4 { background: #ffdcc4; }
         .block.full-5 { background: #d58eff; }
         .block.partial-5 { background: #f2c7ff; }
-        .block.gray-1, .block.gray-2, .block.gray-3, .block.gray-4, .block.gray-5 { background: #999999; }
+        .block.gray-1, .block.gray-2, .block.gray-3, .block.gray-4, .block.gray-5 { background: #c9c9c9; }
         .boss-cell-wrapper {
             display: flex;
             flex-direction: column;
@@ -713,7 +713,7 @@
                                 <div class="grid-data">
                                     <div class="grid-row" v-for="cycle in getCyclesToShow(day)" :key="'day' + day + '-row-' + cycle">
                                         <div class="grid-cell" v-for="boss in bosses" :key="'day' + day + '-cell-' + cycle + '-' + boss">
-                                            <template v-if="getBossBlocks(day, boss).rows">
+                                            <template v-if="getBossBlocks(day, boss) && getBossBlocks(day, boss).rows">
                                                 <div class="boss-cell-wrapper" v-if="getBossBlocks(day, boss).rows.find(r => r.cycle === cycle)">
                                                     <div class="block-container" :style="{ width: (getBossBlocks(day, boss).maxWidth * 37 - 1) + 'px' }">
                                                         <template v-for="(block, bIndex) in getBossBlocks(day, boss).rows.find(r => r.cycle === cycle).blocks" :key="bIndex">
@@ -747,7 +747,7 @@
                                 <el-checkbox :value="dayStats[day] && dayStats[day].usePrevious" 
                                              @input="toggleUsePrevious(day)" 
                                              :disabled="(dayStats[day] && dayStats[day].locked) || day <= 2"
-                                             size="small">使用前一天数据</el-checkbox>
+                                             size="small">继承前日</el-checkbox>
                             </div>
                         </div>
                     </div>
