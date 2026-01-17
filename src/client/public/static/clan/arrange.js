@@ -194,24 +194,6 @@ var vm = new Vue({
             });
         },
         renderKnifeData() {
-            var emptyDiv = document.getElementById('knife-empty');
-            var container = document.getElementById('knife-container');
-            
-            if (!emptyDiv || !container) {
-                return;
-            }
-            
-            var totalCount = (this.knifeList[2] || []).length + (this.knifeList[3] || []).length + (this.knifeList[4] || []).length;
-            
-            if (totalCount === 0) {
-                emptyDiv.style.display = 'block';
-                container.style.display = 'none';
-                return;
-            }
-            
-            emptyDiv.style.display = 'none';
-            container.style.display = 'block';
-            
             for (var phase = 2; phase <= 4; phase++) {
                 this.renderPhase(phase);
             }

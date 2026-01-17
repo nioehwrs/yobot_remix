@@ -203,9 +203,6 @@
             background: #ff4777;
             color: #fff;
         }
-        .knife-container {
-            display: none;
-        }
         .phase-section {
             margin-bottom: 16px;
         }
@@ -658,27 +655,22 @@
                 <span slot="label">
                     <i class="el-icon-document"></i> 刀型
                 </span>
-                <div id="knife-empty" style="text-align:center;color:#909399;padding:20px;">
-                    暂无刀型数据，点击下方按钮插入
-                </div>
-                <div id="knife-container" class="knife-container">
-                    {% raw %}
-                    <div v-for="phase in [2, 3, 4]" :key="phase" class="phase-section">
-                        <div class="phase-title">{{ phase }}阶段</div>
-                        <div :id="'knife-phase-' + phase" class="phase-content">
-                            <div :id="'knife-phase-' + phase + '-empty'" class="phase-empty" style="display:none;">
-                                该阶段暂无刀型
-                            </div>
-                        </div>
-                        <div style="text-align:center;margin-top:10px;" class="phase-actions">
-                            <button type="button" class="insert-btn" @click="insertKnife(phase)">
-                                <i class="el-icon-plus"></i>
-                                <span>{{ phase }}阶段插入刀型</span>
-                            </button>
+                {% raw %}
+                <div v-for="phase in [2, 3, 4]" :key="phase" class="phase-section">
+                    <div class="phase-title">{{ phase }}阶段</div>
+                    <div :id="'knife-phase-' + phase" class="phase-content">
+                        <div :id="'knife-phase-' + phase + '-empty'" class="phase-empty" style="display:none;">
+                            该阶段暂无刀型
                         </div>
                     </div>
-                    {% endraw %}
+                    <div style="text-align:center;margin-top:10px;" class="phase-actions">
+                        <button type="button" class="insert-btn" @click="insertKnife(phase)">
+                            <i class="el-icon-plus"></i>
+                            <span>{{ phase }}阶段插入刀型</span>
+                        </button>
+                    </div>
                 </div>
+                {% endraw %}
             </el-tab-pane>
             <el-tab-pane>
                 <span slot="label">
