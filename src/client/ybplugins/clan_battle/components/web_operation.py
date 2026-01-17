@@ -10,6 +10,7 @@ from ...ybdata import Clan_group, Clan_member, User
 from ..exception import ClanBattleError
 from ..util import pcr_datetime, atqq
 from .multi_cq_utils import who_am_i
+from .realize import get_knife_list, save_knife_list, get_stats_config, save_stats_config, get_day_stats, save_day_stats
 
 _logger = logging.getLogger(__name__)
 
@@ -35,9 +36,9 @@ def register_routes(self, app: Quart):
 
 	@app.route(
 		urljoin(self.setting['public_basepath'],
-				'clan/<int:group_id>/subscribers/'),
+				'clan/<int:group_id>/arrange/'),
 		methods=['GET'])
-	async def yobot_clan_subscribers(group_id):
+	async def yobot_clan_arrange(group_id):
 		if 'yobot_user' not in session:
 			return redirect(url_for('yobot_login', callback=request.path))
 		user = User.get_by_id(session['yobot_user'])
@@ -49,7 +50,7 @@ def register_routes(self, app: Quart):
 		if (not is_member and user.authority_group >= 10):
 			return await render_template('clan/unauthorized.html')
 		return await render_template(
-			'clan/subscribers.html',
+			'clan/arrange.html',
 		)
 
 	@app.route(
@@ -387,6 +388,36 @@ def register_routes(self, app: Quart):
 						)
 					)
 				return jsonify(code = 0, notice = notice)
+			elif action == 'get_knife_list':
+				knife_list = get_knife_list(self, group_id)
+				return jsonify(
+					code=0,
+					knifeList=knife_list)
+			elif action == 'save_knife_list':
+				knife_list = payload['knifeList']
+				save_knife_list(self, group_id, knife_list)
+				_logger.info('网页 成功 {} {} {}'.format(user_id, group_id, action))
+				return jsonify(code=0, notice='保存成功')
+			elif action == 'get_stats_config':
+				stats_config = get_stats_config(self, group_id)
+				return jsonify(
+					code=0,
+					statsConfig=stats_config)
+			elif action == 'save_stats_config':
+				stats_config = payload['statsConfig']
+				save_stats_config(self, group_id, stats_config)
+				_logger.info('网页 成功 {} {} {}'.format(user_id, group_id, action))
+				return jsonify(code=0, notice='统计配置保存成功')
+			elif action == 'get_day_stats':
+				day_stats = get_day_stats(self, group_id)
+				return jsonify(
+					code=0,
+					dayStats=day_stats)
+			elif action == 'save_day_stats':
+				day_stats = payload['dayStats']
+				save_day_stats(self, group_id, day_stats)
+				_logger.info('网页 成功 {} {} {}'.format(user_id, group_id, action))
+				return jsonify(code=0, notice='日统计状态保存成功')
 			elif action == 'modify':
 				if user.authority_group >= 100:
 					return jsonify(code=11, message='Insufficient authority')

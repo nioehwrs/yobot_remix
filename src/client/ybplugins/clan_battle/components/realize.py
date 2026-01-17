@@ -1247,6 +1247,74 @@ def save_slot(self, group_id: Groupid, qqid: QQid,
 	self.get_member_list(group_id, nocache = True)
 	return '已记录SL。若已申请/挂树，需重新报告。 Σ(っ °Д °;)っ'
 
+
+#刀型相关
+def get_knife_list(self, group_id: Groupid):
+	group: Clan_group = get_clan_group(self, group_id)
+	if group is None:
+		raise GroupNotExist
+	if group.knife_list is None or group.knife_list == '':
+		return []
+	import json
+	try:
+		return json.loads(group.knife_list)
+	except:
+		return []
+
+
+def save_knife_list(self, group_id: Groupid, knife_list):
+	group: Clan_group = get_clan_group(self, group_id)
+	if group is None:
+		raise GroupNotExist
+	import json
+	group.knife_list = json.dumps(knife_list, ensure_ascii=False)
+	group.save()
+
+
+def get_stats_config(self, group_id: Groupid):
+	group: Clan_group = get_clan_group(self, group_id)
+	if group is None:
+		raise GroupNotExist
+	if group.stats_config is None or group.stats_config == '':
+		return {}
+	import json
+	try:
+		return json.loads(group.stats_config)
+	except:
+		return {}
+
+
+def save_stats_config(self, group_id: Groupid, stats_config):
+	group: Clan_group = get_clan_group(self, group_id)
+	if group is None:
+		raise GroupNotExist
+	import json
+	group.stats_config = json.dumps(stats_config, ensure_ascii=False)
+	group.save()
+
+
+def get_day_stats(self, group_id: Groupid):
+	group: Clan_group = get_clan_group(self, group_id)
+	if group is None:
+		raise GroupNotExist
+	if group.day_stats is None or group.day_stats == '':
+		return {}
+	import json
+	try:
+		return json.loads(group.day_stats)
+	except:
+		return {}
+
+
+def save_day_stats(self, group_id: Groupid, day_stats):
+	group: Clan_group = get_clan_group(self, group_id)
+	if group is None:
+		raise GroupNotExist
+	import json
+	group.day_stats = json.dumps(day_stats, ensure_ascii=False)
+	group.save()
+
+
 #记录伤害/清空伤害
 def report_hurt(self, s, hurt, group_id:Groupid, qqid:QQid, clean_type = 0):
 	"""

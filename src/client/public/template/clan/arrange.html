@@ -14,6 +14,47 @@
     <script src="/yobot-depencency/yocool@final/princessadventure/yocool.js"></script>
     <link rel="stylesheet" href="/yobot-depencency/yocool@final/princessadventure/style.css">
     <style>
+        .el-tabs--left .el-tabs__item.is-left.is-active {
+            width: 100%;
+            text-align: center;
+        }
+        .el-table .el-table__row td {
+            background: #f5f7fa !important;
+        }
+        .cell-selected {
+            background: #fdf6ec !important;
+            border: 1px solid #e6a23c;
+        }
+        .el-table {
+            border-color: #909399;
+        }
+        .el-table td, .el-table th {
+            border-color: #909399 !important;
+        }
+        .el-table--border td, .el-table--border th, .el-table--border::after {
+            border-color: #909399;
+        }
+        .cell-content {
+            width: 120px;
+            height: 40px;
+            border: 1px solid #909399;
+            box-sizing: border-box;
+        }
+        .el-table .cell {
+            padding: 0 !important;
+            line-height: normal !important;
+        }
+        .el-table .el-table__cell {
+            padding: 0 !important;
+        }
+        .el-table td {
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            line-height: 26px !important;
+        }
+        .el-table th.el-table__cell {
+            height: 40px !important;
+        }
         .el-badge {
             margin-top: 8px;
         }
@@ -756,9 +797,89 @@
             </el-tab-pane>
             <el-tab-pane>
                 <span slot="label">
-                    <i class="el-icon-bell"></i> 预约提醒
+                    <i class="el-icon-tableware"></i> 排刀表
                 </span>
-                <p style="text-align:center;color:#909399;">预约提醒功能开发中</p>
+                <el-tabs type="border-card" tab-position="left">
+                    <el-tab-pane label="Day1">
+                        <div style="display: flex; overflow-x: auto; justify-content: center;">
+                            <div style="flex-shrink: 0;">
+                        {% raw %}
+                        <el-table :data="tableData" border style="width: 100%; background: #f5f7fa;" size="mini" :row-style="{ height: '40px' }">
+                            <el-table-column prop="index" label="编号" width="60" align="center"></el-table-column>
+                            <el-table-column label="昵称" width="100">
+                                <template slot-scope="scope">
+                                    <el-input v-model="scope.row.nickname" size="mini"></el-input>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                        {% endraw %}
+                            </div>
+                            <div style="flex-shrink: 0; max-width: calc(100% - 170px);">
+                        {% raw %}
+                        <el-table :data="tableData" border style="background: #f5f7fa;" size="mini" :fit="false" :row-style="{ height: '40px' }">
+                            <el-table-column label="刀1" align="center" width="240">
+                                <template slot-scope="scope">
+                                    <div style="display: flex;">
+                                        <div :class="['cell-content', { 'cell-selected': isCellSelected(scope.row.index, 'knife1-1') }]"
+                                             @click="selectCell(scope.row.index, 'knife1-1', $event)"
+                                             style="cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                            <span style="height: 28px; width: 118px; line-height: 28px;">无内容</span>
+                                        </div>
+                                        <div :class="['cell-content', { 'cell-selected': isCellSelected(scope.row.index, 'knife1-2') }]"
+                                             @click="selectCell(scope.row.index, 'knife1-2', $event)"
+                                             style="cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                            <span style="height: 28px; width: 118px; line-height: 28px;">无内容</span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="刀2" align="center" width="240">
+                                <template slot-scope="scope">
+                                    <div style="display: flex;">
+                                        <div :class="['cell-content', { 'cell-selected': isCellSelected(scope.row.index, 'knife2-1') }]"
+                                             @click="selectCell(scope.row.index, 'knife2-1', $event)"
+                                             style="cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                            <span style="height: 28px; width: 118px; line-height: 28px;">无内容</span>
+                                        </div>
+                                        <div :class="['cell-content', { 'cell-selected': isCellSelected(scope.row.index, 'knife2-2') }]"
+                                             @click="selectCell(scope.row.index, 'knife2-2', $event)"
+                                             style="cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                            <span style="height: 28px; width: 118px; line-height: 28px;">无内容</span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="刀3" align="center" width="240">
+                                <template slot-scope="scope">
+                                    <div style="display: flex;">
+                                        <div :class="['cell-content', { 'cell-selected': isCellSelected(scope.row.index, 'knife3-1') }]"
+                                             @click="selectCell(scope.row.index, 'knife3-1', $event)"
+                                             style="cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                            <span style="height: 28px; width: 118px; line-height: 28px;">无内容</span>
+                                        </div>
+                                        <div :class="['cell-content', { 'cell-selected': isCellSelected(scope.row.index, 'knife3-2') }]"
+                                             @click="selectCell(scope.row.index, 'knife3-2', $event)"
+                                             style="cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                            <span style="height: 28px; width: 118px; line-height: 28px;">无内容</span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="备注" width="150">
+                                <template slot-scope="scope">
+                                    <el-input v-model="scope.row.remark" size="mini"></el-input>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                        {% endraw %}
+                            </div>
+                        </div>
+                    </el-tab-pane>
+                    <el-tab-pane label="Day2"></el-tab-pane>
+                    <el-tab-pane label="Day3"></el-tab-pane>
+                    <el-tab-pane label="Day4"></el-tab-pane>
+                    <el-tab-pane label="Day5"></el-tab-pane>
+                </el-tabs>
             </el-tab-pane>
         </el-tabs>
     </div>

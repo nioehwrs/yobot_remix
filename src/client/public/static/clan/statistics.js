@@ -1,4 +1,4 @@
-﻿if (!Object.defineProperty) {
+if (!Object.defineProperty) {
     alert('浏览器版本过低');
 }
 var vm = new Vue({
@@ -24,7 +24,7 @@ var vm = new Vue({
                     window.location = '../';
                     break;
                 case '2':
-                    window.location = '../subscribers/';
+                    window.location = '../arrange/';
                     break;
                 case '3':
                     window.location = '../progress/';

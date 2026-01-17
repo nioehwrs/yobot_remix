@@ -95,6 +95,15 @@ class Clan_group(_BaseModel):
     # 预约表（json格式文本） 结构：{boss_num:{qqid: message, }, }
     subscribe_list = TextField(null=True)
 
+    # 刀型表（json格式文本） 结构：[{phase:阶段,boss_num:boss编号,team:阵容,damage_type:类型,value:数值}, ]
+    knife_list = TextField(null=True)
+
+    # 排刀统计配置（json格式文本） 结构：{day:{boss:{a:1,b:0,c:2,tail:null}, }, }
+    stats_config = TextField(null=True)
+
+    # 日统计状态（json格式文本） 结构：{day:{locked:false, usePrevious:false}, }
+    day_stats = TextField(null=True)
+
     challenging_start_time = BigIntegerField(default=0)
     deleted = BooleanField(default=False)
 

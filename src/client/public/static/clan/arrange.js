@@ -33,7 +33,13 @@ var vm = new Vue({
         bosses: CONFIG.BOSSES,
         statsConfig: {},
         dayStats: {},
-        dayResult: {}
+        dayResult: {},
+        tableData: Array.from({ length: 30 }, (_, i) => ({
+            index: i + 1,
+            nickname: '',
+            remark: '',
+            selectedCells: []
+        }))
     },
     mounted() {
         document.title = '排刀列表 - 公会战';
@@ -44,6 +50,79 @@ var vm = new Vue({
         this.loadDayStatsData();
     },
     methods: {
+        selectCell(rowIndex, cellType, event) {
+            var row = this.tableData[rowIndex - 1];
+            var ctrlPressed = event && event.ctrlKey;
+            var shiftPressed = event && event.shiftKey;
+            
+            if (ctrlPressed && shiftPressed) {
+                ctrlPressed = false;
+                shiftPressed = false;
+            }
+            
+            var thisvue = this;
+            var cellKey = rowIndex + '-' + cellType;
+            
+            function getColumn(cell) {
+                return cell.split('-')[0] + '-' + cell.split('-')[1];
+            }
+            
+            function isSameColumn(cell1, cell2) {
+                return getColumn(cell1) === getColumn(cell2);
+            }
+            
+            if (!ctrlPressed && !shiftPressed) {
+                var allSelected = [];
+                this.tableData.forEach(function(r) {
+                    r.selectedCells.forEach(function(c) {
+                        allSelected.push(r.index + '-' + c);
+                    });
+                });
+                
+                if (allSelected.length === 1 && allSelected[0] === cellKey) {
+                    row.selectedCells = [];
+                } else {
+                    thisvue.tableData.forEach(function(r) {
+                        r.selectedCells = [];
+                    });
+                    row.selectedCells = [cellType];
+                }
+            } else if (ctrlPressed && !shiftPressed) {
+                var allSelected = [];
+                this.tableData.forEach(function(r) {
+                    r.selectedCells.forEach(function(c) {
+                        allSelected.push({ row: r.index, cell: c });
+                    });
+                });
+                
+                if (allSelected.length === 1 && isSameColumn(allSelected[0].cell, cellType)) {
+                    var startRow = allSelected[0].row;
+                    var endRow = rowIndex;
+                    var minRow = Math.min(startRow, endRow);
+                    var maxRow = Math.max(startRow, endRow);
+                    var column = getColumn(cellType);
+                    
+                    thisvue.tableData.forEach(function(r) {
+                        r.selectedCells = [];
+                    });
+                    
+                    for (var r = minRow; r <= maxRow; r++) {
+                        thisvue.tableData[r - 1].selectedCells = [column];
+                    }
+                }
+            } else if (!ctrlPressed && shiftPressed) {
+                var idx = row.selectedCells.indexOf(cellType);
+                if (idx >= 0) {
+                    row.selectedCells.splice(idx, 1);
+                } else {
+                    row.selectedCells.push(cellType);
+                }
+            }
+        },
+        isCellSelected(rowIndex, cellType) {
+            var row = this.tableData[rowIndex - 1];
+            return row && row.selectedCells && row.selectedCells.indexOf(cellType) >= 0;
+        },
         loadBossData() {
             var thisvue = this;
             axios.post("../api/", {
@@ -532,14 +611,14 @@ var vm = new Vue({
 
             this.$set(this.dayResult[day], boss, result);
 
-            if (day === 5 && boss === 3) {
-                console.log('=== Day 1-5 Boss 3 dayResult ===');
-                for (var d = 1; d <= 5; d++) {
-                    if (this.dayResult[d] && this.dayResult[d][3]) {
-                        console.log('Day ' + d + ':', JSON.parse(JSON.stringify(this.dayResult[d][3])));
-                    }
-                }
-            }
+            // if (day === 5 && boss === 3) {
+            //     console.log('=== Day 1-5 Boss 3 dayResult ===');
+            //     for (var d = 1; d <= 5; d++) {
+            //         if (this.dayResult[d] && this.dayResult[d][3]) {
+            //             console.log('Day ' + d + ':', JSON.parse(JSON.stringify(this.dayResult[d][3])));
+            //         }
+            //     }
+            // }
 
             return result;
         },
