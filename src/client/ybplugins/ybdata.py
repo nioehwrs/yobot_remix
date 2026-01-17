@@ -229,5 +229,19 @@ def db_upgrade(old_version):
             new_subscribe_list = json.dumps(new_subscribe_list)
             group.subscribe_list = new_subscribe_list
             group.save()
+    
+    if old_version <= 1:
+        try:
+            _db.execute_sql("ALTER TABLE clan_group ADD COLUMN knife_list TEXT DEFAULT '[]'")
+        except:
+            pass
+        try:
+            _db.execute_sql("ALTER TABLE clan_group ADD COLUMN stats_config TEXT DEFAULT NULL")
+        except:
+            pass
+        try:
+            _db.execute_sql("ALTER TABLE clan_group ADD COLUMN day_stats TEXT DEFAULT NULL")
+        except:
+            pass
 
     DB_schema.replace(key="version", value=str(_version)).execute()
