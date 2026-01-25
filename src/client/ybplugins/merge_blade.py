@@ -66,6 +66,23 @@ class MergeBlade:
 
         return "\n".join(lines)
 
+    def calculate_one_damage_compensation(self, current_hp: int, damage1: int) -> str:
+        """计算单伤害的合刀满补所需伤害"""
+        second_damage_if_first = math.floor((current_hp - damage1) / (21 / 90)) + 1
+        first_damage_if_second = math.floor(current_hp - damage1 * (21 / 90)) + 1
+
+        first_note = "（高于boss血量）才能满补" if second_damage_if_first > current_hp else "可满补"
+        second_note = "可满补" if first_damage_if_second <= current_hp else "才能满补"
+
+        response_lines = [
+            f"boss血量={current_hp}",
+            f"对boss伤害={damage1}",
+            f"若[{damage1}]先出，后出刀需{second_damage_if_first}伤害{first_note}",
+            f"若[{damage1}]后出，先出刀需{first_damage_if_second}伤害{second_note}",
+        ]
+
+        return "\n".join(response_lines)
+
     def execute(self, match_num: int, msg: Dict) -> Union[str, None]:
         if match_num != 1:
             return None
@@ -111,6 +128,30 @@ class MergeBlade:
             except Exception as e:
                 return f"计算错误：{str(e)}"
 
+        one_damage_pattern = re.match(
+            r'^(?:合刀|cal)\s+(\d+\.?\d*)\s+(\d+\.?\d*)$',
+            cmd
+        )
+
+        if one_damage_pattern:
+            try:
+                current_hp_str = one_damage_pattern.group(1)
+                damage1_str = one_damage_pattern.group(2)
+
+                current_hp = self.parse_damage(current_hp_str)
+                damage1 = self.parse_damage(damage1_str)
+
+                if current_hp <= 0:
+                    return "当前HP必须大于0"
+
+                if damage1 <= 0:
+                    return "伤害值必须大于0"
+
+                return self.calculate_one_damage_compensation(current_hp, damage1)
+
+            except Exception as e:
+                return f"计算错误：{str(e)}"
+
         single_hp_pattern = re.match(
             r'^(?:合刀|cal)\s+(\d+\.?\d*)$',
             cmd
@@ -129,4 +170,4 @@ class MergeBlade:
             except Exception as e:
                 return f"计算错误：{str(e)}"
 
-        return "格式错误，请使用：\n合刀 [当前血量] [伤害1] [伤害2] - 计算补偿时间\n合刀 [当前血量] - 计算满补所需伤害\n例如：合刀 2000w 1800w 1500w\n例如：合刀 176120000"
+        return "格式错误，请使用：\n合刀 [当前血量] [伤害1] [伤害2] - 计算补偿时间\n合刀 [当前血量] [伤害1] - 计算单伤害合刀\n合刀 [当前血量] - 计算满补所需伤害\n例如：合刀 2000w 1800w 1500w\n例如：合刀 176120000"
