@@ -55,49 +55,78 @@ class MergeBlade:
             return f"{damage // 10000}w"
         return str(damage)
 
+    def calculate_full_compensation_damage(self, current_hp: int) -> str:
+        """计算满补所需伤害（1-4刀）"""
+        lines = [f"HP={current_hp}", "刀数 / 满补所需伤害"]
+
+        for x in range(1, 5):
+            denominator = x - 1 + 21 / 90
+            full_compensation_damage = math.floor(current_hp / denominator) + 1
+            lines.append(f"{x}刀      {full_compensation_damage}")
+
+        return "\n".join(lines)
+
     def execute(self, match_num: int, msg: Dict) -> Union[str, None]:
         if match_num != 1:
             return None
 
         cmd = msg.get("raw_message", "").strip()
 
-        match_pattern = re.match(
+        two_damage_pattern = re.match(
             r'^(?:合刀|cal)\s+(\d+\.?\d*)\s+(\d+\.?\d*)\s+(\d+\.?\d*)$',
             cmd
         )
 
-        if not match_pattern:
-            return "格式错误，请使用：合刀 [当前血量] [伤害1] [伤害2]\n例如：合刀 2000w 1800w 1500w"
+        if two_damage_pattern:
+            try:
+                current_hp_str = two_damage_pattern.group(1)
+                damage1_str = two_damage_pattern.group(2)
+                damage2_str = two_damage_pattern.group(3)
 
-        try:
-            current_hp_str = match_pattern.group(1)
-            damage1_str = match_pattern.group(2)
-            damage2_str = match_pattern.group(3)
+                current_hp = self.parse_damage(current_hp_str)
+                damage1 = self.parse_damage(damage1_str)
+                damage2 = self.parse_damage(damage2_str)
 
-            current_hp = self.parse_damage(current_hp_str)
-            damage1 = self.parse_damage(damage1_str)
-            damage2 = self.parse_damage(damage2_str)
+                if current_hp <= 0:
+                    return "当前血量必须大于0"
 
-            if current_hp <= 0:
-                return "当前血量必须大于0"
+                if damage1 <= 0 or damage2 <= 0:
+                    return "伤害值必须大于0"
 
-            if damage1 <= 0 or damage2 <= 0:
-                return "伤害值必须大于0"
+                comp1 = self.calculate_compensation(current_hp, damage1, damage2)
+                comp2 = self.calculate_compensation(current_hp, damage2, damage1)
 
-            comp1 = self.calculate_compensation(current_hp, damage1, damage2)
-            comp2 = self.calculate_compensation(current_hp, damage2, damage1)
+                format_damage1 = self.format_damage(damage1)
+                format_damage2 = self.format_damage(damage2)
 
-            format_damage1 = self.format_damage(damage1)
-            format_damage2 = self.format_damage(damage2)
+                response_lines = [
+                    f"boss血量={self.format_damage(current_hp)}",
+                    f"对boss伤害={format_damage1} | {format_damage2}",
+                    f"若[{damage1}]先出，[{damage2}]后出，补偿{comp1}s",
+                    f"若[{damage2}]先出，[{damage1}]后出，补偿{comp2}s",
+                ]
 
-            response_lines = [
-                f"boss血量={self.format_damage(current_hp)}",
-                f"对boss伤害={format_damage1} | {format_damage2}",
-                f"若[{damage1}]先出，[{damage2}]后出，补偿{comp1}s",
-                f"若[{damage2}]先出，[{damage1}]后出，补偿{comp2}s",
-            ]
+                return "\n".join(response_lines)
 
-            return "\n".join(response_lines)
+            except Exception as e:
+                return f"计算错误：{str(e)}"
 
-        except Exception as e:
-            return f"计算错误：{str(e)}"
+        single_hp_pattern = re.match(
+            r'^(?:合刀|cal)\s+(\d+\.?\d*)$',
+            cmd
+        )
+
+        if single_hp_pattern:
+            try:
+                current_hp_str = single_hp_pattern.group(1)
+                current_hp = self.parse_damage(current_hp_str)
+
+                if current_hp <= 0:
+                    return "当前HP必须大于0"
+
+                return self.calculate_full_compensation_damage(current_hp)
+
+            except Exception as e:
+                return f"计算错误：{str(e)}"
+
+        return "格式错误，请使用：\n合刀 [当前血量] [伤害1] [伤害2] - 计算补偿时间\n合刀 [当前血量] - 计算满补所需伤害\n例如：合刀 2000w 1800w 1500w\n例如：合刀 176120000"
