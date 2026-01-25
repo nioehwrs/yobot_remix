@@ -260,6 +260,7 @@ class Yobot:
             settings.Setting(**kwargs),
             web_util.WebUtil(**kwargs),
             clan_battle.ClanBattle(**kwargs),
+            merge_blade.MergeBlade(**kwargs),
         ]
         self.plug_passive = [p for p in plug_all if p.Passive]
         self.plug_active = [p for p in plug_all if p.Active]
