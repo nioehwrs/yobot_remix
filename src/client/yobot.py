@@ -21,12 +21,12 @@ if __package__:
     from .ybplugins import (clan_battle, homepage,
                             login, marionette, settings,
                             switcher, templating, web_util, ybdata,
-                            yobot_msg, custom, group_leave)
+                            yobot_msg, custom, group_leave, merge_blade)
 else:
     from ybplugins import (clan_battle, homepage,
                            login, marionette, settings,
                            switcher, templating, web_util, ybdata,
-                           yobot_msg, custom, group_leave)
+                           yobot_msg, custom, group_leave, merge_blade)
 
 # 本项目构建的框架非常粗糙，不建议各位把时间浪费本项目上
 # 如果想开发自己的机器人，建议直接使用 nonebot 框架
