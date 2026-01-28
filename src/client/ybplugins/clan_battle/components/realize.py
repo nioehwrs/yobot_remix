@@ -1463,7 +1463,11 @@ def challenger_info(self, group_id):
 					challenger_msg += '(挂树)'
 					if "挂树" not in extra_info:
 						extra_info["挂树"] = {"style-background-color": (255, 205, 210)}
-					extra_info["挂树"][challenger] = challenger_nickname
+					tree_msg = info.get('msg')
+					if tree_msg:
+						extra_info["挂树"][challenger] = f"{challenger_nickname}:{tree_msg}"
+					else:
+						extra_info["挂树"][challenger] = challenger_nickname
 				extra_info["挑战"][challenger] = challenger_msg
 		
 		if boss_num in subscribe_handler.data:
