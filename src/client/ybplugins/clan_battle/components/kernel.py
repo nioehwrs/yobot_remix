@@ -249,7 +249,7 @@ def execute(self, match_num, ctx):
 						return '今日已出完'
 
 			try:
-				boss_status = self.challenge(group_id, user_id, True, None, None, is_continue,
+				boss_status = self.challenge(group_id, user_id, True, None, is_continue,
 					boss_num=boss_num, second_time=second_time, behalfed=behalf, previous_day=previous_day)
 			except ClanBattleError as e:
 				_logger.info('群聊 失败 {} {} {}'.format(user_id, group_id, cmd))
