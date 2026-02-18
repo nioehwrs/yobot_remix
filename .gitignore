@@ -1,9 +1,10 @@
 **/__pycache__
 .vscode/
 src/client/yobot_data/*
-!src/client/yobot_data/yobotdata_new.db
 src/client/public/template/help/
 src/client/public/static/aya.ico
 src/client/venv
 src/client/dist
 src/client/build
+src/client/yobot_env
+src/client/yobot_env_py310

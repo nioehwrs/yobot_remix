@@ -560,6 +560,7 @@ def challenge(self,
 				is_continue = False,
 				*,
 				boss_num = None,
+				second_time = None,
 				previous_day = False,
 				) :
 	"""
@@ -596,6 +597,17 @@ def challenge(self,
 
 	if not boss_num:
 		raise GroupError('又不申请出刀又不说打哪个王，报啥子刀啊 (╯‵□′)╯︵┻━┻')
+
+	if second_time is not None:
+		has_normal_blade = False
+		if self.check_blade(group_id, qqid):
+			challenging_member_list_before = safe_load_json(group.challenging_member_list, {})
+			if boss_num in challenging_member_list_before and str(qqid) in challenging_member_list_before[boss_num]:
+				if not challenging_member_list_before[boss_num][str(qqid)]['is_continue']:
+					has_normal_blade = True
+		if not has_normal_blade:
+			raise GroupError('返秒仅支持完整刀，请使用普通尾刀')
+
 	if not self.check_blade(group_id, qqid):
 		if behalf:
 			self.apply_for_challenge(is_continue, group_id, behalf, boss_num, qqid, False)
@@ -674,6 +686,7 @@ def challenge(self,
 		challenge_damage=challenge_damage,
 		is_continue=is_continue,
 		behalf=behalf,
+		message=f'返秒{second_time}s' if second_time else None,
 	)
 
 	if defeat:
@@ -707,13 +720,15 @@ def challenge(self,
 
 	nik = self._get_nickname_by_qqid(qqid)
 	behalf_nik = behalf and f'（{self._get_nickname_by_qqid(behalf)}代）' or ''
+	second_time_msg = f'，返还{second_time}s' if second_time else ''
 	if defeat:
 		# 击败boss，补偿+1，已完成刀数需分情况
-		msg = '{}{}对{}号boss造成了{:,}点伤害，击败了boss\n（今日已完成{}刀，还有补偿刀{}刀，本刀是{}）\n'.format(
+		msg = '{}{}对{}号boss造成了{:,}点伤害，击败了boss\n（今日已完成{}刀，还有补偿刀{}刀，本刀是{}{}）\n'.format(
 			nik, behalf_nik, boss_num, challenge_damage,
 			finished+1 if is_continue else finished,
 			cont_blade-1 if is_continue else cont_blade+1,
-			'尾余刀' if is_continue else '收尾刀')
+			'尾余刀' if is_continue else '收尾刀',
+			second_time_msg)
 	else:
 		# 未击败boss，无论是补偿还是非补偿已出刀数+1，不会增加补偿数
 		msg = '{}{}对{}号boss造成了{:,}点伤害\n（今日已出完整刀{}刀，还有补偿刀{}刀，本刀是{}）\n'.format(

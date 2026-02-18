@@ -185,25 +185,153 @@ def execute(self, match_num, ctx):
 		return boss_status
 
 
-	elif match_num == 5:  # 尾刀
-		match = re.match(r'^(?:尾刀|尾) ?([1-5])? *(补偿|补|b|bc|B|BC|Bc|bC)? ?(?:\[CQ:at,qq=(\d+)(?:,name=[^\]]*)?\])? *(昨[日天])?$', cmd)
-		if not match: return
-		behalf = match.group(3) and int(match.group(3))
-		is_continue = match.group(2) and True or False
-		boss_num = match.group(1)
+	elif match_num == 5:  # 尾刀 或 尾1-5
+		# 区分尾刀和尾1-5
+		if re.match(r'^尾[1-5]( |$)', cmd):
+			# 尾1-5 无需申请出刀模式
+			match = re.match(r'^尾([1-5]) ?(.*)$', cmd)
+			if not match: return
+			boss_num = match.group(1)
+			rest = match.group(2).strip()
 
-		previous_day = bool(match.group(4))
-		try:
-			boss_status = self.challenge(group_id, user_id, True, None, behalf, is_continue,
-				boss_num = boss_num, previous_day = previous_day)
-			# if behalf:
-			# 	sender = self._get_nickname_by_qqid(user_id)
-			# 	self.behelf_remind(behalf, f'{sender}使用您的账号收了个尾刀')
-		except ClanBattleError as e:
-			_logger.info('群聊 失败 {} {} {}'.format(user_id, group_id, cmd))
-			return str(e)
-		_logger.info('群聊 成功 {} {} {}'.format(user_id, group_id, cmd))
-		return boss_status
+			is_continue = False
+			second_time = None
+			behalf = None
+			previous_day = False
+
+			at_match = re.search(r'\[CQ:at,qq=(\d+)(?:,name=[^\]]*)?\]', rest)
+			if at_match:
+				behalf = int(at_match.group(1))
+				rest = re.sub(r'\[CQ:at,qq=\d+(?:,name=[^\]]*)?\]', '', rest).strip()
+
+			if '昨日' in rest:
+				previous_day = True
+				rest = re.sub(r'昨[日天]', '', rest).strip()
+
+			num_match = re.search(r'(\d+)s?', rest)
+			if num_match:
+				second_time = int(num_match.group(1))
+
+			group = self.get_clan_group(group_id)
+			blade_user = behalf or user_id
+
+			challenges = Clan_challenge.select().where(
+				Clan_challenge.gid == group_id,
+				Clan_challenge.qqid == blade_user,
+				Clan_challenge.bid == group.battle_id,
+			)
+			full_blades = sum(1 for c in challenges if not c.is_continue and c.boss_health_remain > 0)
+			tail_blades = sum(1 for c in challenges if not c.is_continue and c.boss_health_remain == 0)
+			cont_blades = sum(1 for c in challenges if c.is_continue)
+
+			# 4阶段前无需检查返秒
+			if group.boss_cycle < 4:
+				if second_time is not None:
+					if full_blades + tail_blades >= 3:
+						return '今日已出完，请使用普通尾刀'
+					is_continue = False
+				else:
+					if full_blades + tail_blades >= 3 and cont_blades >= tail_blades:
+						return '今日已出完'
+					is_continue = (full_blades + tail_blades >= 3)
+			else:
+				# 4阶段后需要检查返秒
+				if second_time is not None:
+					if full_blades + tail_blades >= 3:
+						return '今日已出完，请使用普通尾刀'
+					if not (21 <= second_time <= 90):
+						return '请保证返还时间在21-90s范围内'
+					is_continue = False
+				else:
+					if full_blades + tail_blades < 3:
+						return '请使用尾刀+返秒（如：尾1 30s）'
+					if cont_blades >= tail_blades:
+						return '今日已出完'
+
+			try:
+				boss_status = self.challenge(group_id, user_id, True, None, None, is_continue,
+					boss_num=boss_num, second_time=second_time, behalf=behalf, previous_day=previous_day)
+			except ClanBattleError as e:
+				_logger.info('群聊 失败 {} {} {}'.format(user_id, group_id, cmd))
+				return str(e)
+			_logger.info('群聊 成功 {} {} {}'.format(user_id, group_id, cmd))
+			return boss_status
+
+		else:
+			# 原有的尾刀逻辑（需要申请出刀）
+			match = re.match(r'^(?:尾刀|尾) ?(.*)$', cmd)
+			if not match: return
+			
+			rest = match.group(1).strip()
+			boss_num = None
+			is_continue = False
+			second_time = None
+			behalf = None
+			previous_day = False
+
+			if '昨日' in rest:
+				previous_day = True
+				rest = re.sub(r'昨[日天]', '', rest).strip()
+
+			at_match = re.search(r'\[CQ:at,qq=(\d+)(?:,name=[^\]]*)?\]', rest)
+			if at_match:
+				behalf = int(at_match.group(1))
+				rest = re.sub(r'\[CQ:at,qq=\d+(?:,name=[^\]]*)?\]', '', rest).strip()
+
+			cont_match = re.search(r'(?:^| )(b|补偿|补|bc|B|BC|Bc|bC)(?: |$)', rest)
+			if cont_match:
+				is_continue = True
+				rest = re.sub(r'(?:^| )(b|补偿|补|bc|B|BC|Bc|bC)(?: |$)', '', rest).strip()
+
+			num_match = re.search(r'(\d+)s?', rest)
+			if num_match:
+				num_str = num_match.group(1)
+				full_match = num_match.group(0)
+				if len(num_str) == 1 and num_str in '12345' and not full_match.endswith('s'):
+					boss_num = num_str
+					rest = re.sub(r'\d+ *', '', rest).strip()
+				elif len(num_str) >= 2 or full_match.endswith('s'):
+					second_time = int(num_str)
+					rest = re.sub(r'\d+s?', '', rest).strip()
+
+			rest = rest.strip()
+			if rest and not boss_num and not second_time:
+				if rest.isdigit():
+					if len(rest) == 1:
+						boss_num = rest
+					else:
+						second_time = int(rest)
+
+			if is_continue and second_time is not None:
+				return '补偿刀无需返还时间'
+			if second_time is not None and not (21 <= second_time <= 90):
+				return '请保证返还时间在21-90s范围内'
+
+			group = self.get_clan_group(group_id)
+			blade_user = behalf or user_id
+			if not self.check_blade(group_id, blade_user):
+				return '请先申请出刀'
+
+			if second_time is None and group.boss_cycle >= 4:
+				challenging_member_list = safe_load_json(group.challenging_member_list, {})
+				is_cont_blade = False
+				if challenging_member_list:
+					for boss_num_str, boss_data in challenging_member_list.items():
+						if str(blade_user) in boss_data:
+							if boss_data[str(blade_user)]['is_continue']:
+								is_cont_blade = True
+								break
+				if not is_cont_blade:
+					return '4阶段后请使用尾刀+返秒（如：尾刀 30s）'
+
+			try:
+				boss_status = self.challenge(group_id, user_id, True, None, behalf, is_continue,
+					boss_num=boss_num, second_time=second_time, previous_day=previous_day)
+			except ClanBattleError as e:
+				_logger.info('群聊 失败 {} {} {}'.format(user_id, group_id, cmd))
+				return str(e)
+			_logger.info('群聊 成功 {} {} {}'.format(user_id, group_id, cmd))
+			return boss_status
 
 	elif match_num == 6:  # 撤销
 		if cmd != '撤销': return
