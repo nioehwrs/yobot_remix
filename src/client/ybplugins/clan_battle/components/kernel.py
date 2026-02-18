@@ -11,7 +11,7 @@ from urllib.parse import urljoin
 from aiocqhttp.api import Api
 from apscheduler.triggers.cron import CronTrigger
 
-from ...ybdata import Clan_group, Clan_member, User
+from ...ybdata import Clan_group, Clan_member, User, Clan_challenge
 from ..exception import ClanBattleError, InputError, GroupNotExist
 from ..util import atqq
 from .define import Commands, Server
