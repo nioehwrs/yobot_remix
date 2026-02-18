@@ -199,11 +199,6 @@ def execute(self, match_num, ctx):
 			behalf = None
 			previous_day = False
 
-			at_match = re.search(r'\[CQ:at,qq=(\d+)(?:,name=[^\]]*)?\]', rest)
-			if at_match:
-				behalf = int(at_match.group(1))
-				rest = re.sub(r'\[CQ:at,qq=\d+(?:,name=[^\]]*)?\]', '', rest).strip()
-
 			if '昨日' in rest:
 				previous_day = True
 				rest = re.sub(r'昨[日天]', '', rest).strip()
@@ -211,6 +206,10 @@ def execute(self, match_num, ctx):
 			num_match = re.search(r'(\d+)s?', rest)
 			if num_match:
 				second_time = int(num_match.group(1))
+
+			at_match = re.search(r'\[CQ:at,qq=(\d+)(?:,name=[^\]]*)?\]', rest)
+			if at_match:
+				behalf = int(at_match.group(1))
 
 			group = self.get_clan_group(group_id)
 			blade_user = behalf or user_id
@@ -249,8 +248,8 @@ def execute(self, match_num, ctx):
 						return '今日已出完'
 
 			try:
-				boss_status = self.challenge(group_id, user_id, True, None, is_continue,
-					boss_num=boss_num, second_time=second_time, behalfed=behalf, previous_day=previous_day)
+				boss_status = self.challenge(group_id, user_id, True, None, behalf, is_continue,
+					boss_num=boss_num, second_time=second_time, previous_day=previous_day)
 			except ClanBattleError as e:
 				_logger.info('群聊 失败 {} {} {}'.format(user_id, group_id, cmd))
 				return str(e)
