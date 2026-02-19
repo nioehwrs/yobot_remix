@@ -199,10 +199,11 @@ def execute(self, match_num, ctx):
 			behalf = None
 			previous_day = False
 
-			# 先解析 @成员
+			# 先解析 @成员（完整移除 CQ 码）
 			at_match = re.search(r'\[CQ:at,qq=(\d+)(?:,name=[^\]]*)?\]', rest)
 			if at_match:
 				behalf = int(at_match.group(1))
+				rest = re.sub(r'\[CQ:at,qq=\d+(?:,name=[^\]]*)?\]', '', rest).strip()
 
 			if '昨日' in rest:
 				previous_day = True
@@ -211,15 +212,13 @@ def execute(self, match_num, ctx):
 			num_match = re.search(r'(\d+)s?', rest)
 			if num_match:
 				second_time = int(num_match.group(1))
+			else:
+				second_time = None
 
-			cont_match = re.search(r'(?:^| )(b|补偿|补|bc|B|BC|Bc|bC)(?: |$)', rest)
+			cont_match = re.search(r'(?:^| )(b|补偿|补|bc|B|BC|Bc|bC)(?= |$|@|\[)', rest)
 			if cont_match:
 				is_continue = True
-				rest = re.sub(r'(?:^| )(b|补偿|补|bc|B|BC|Bc|bC)(?: |$)', '', rest).strip()
-
-			at_match = re.search(r'\[CQ:at,qq=(\d+)(?:,name=[^\]]*)?\]', rest)
-			if at_match:
-				behalf = int(at_match.group(1))
+				rest = re.sub(r'(?:^| )(b|补偿|补|bc|B|BC|Bc|bC)(?= |$|@|\[)', '', rest).strip()
 
 			group = self.get_clan_group(group_id)
 			blade_user = behalf or user_id
