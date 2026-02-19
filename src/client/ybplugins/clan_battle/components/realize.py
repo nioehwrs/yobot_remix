@@ -598,16 +598,6 @@ def challenge(self,
 	if not boss_num:
 		raise GroupError('又不申请出刀又不说打哪个王，报啥子刀啊 (╯‵□′)╯︵┻━┻')
 
-	if second_time is not None:
-		has_normal_blade = False
-		if self.check_blade(group_id, qqid):
-			challenging_member_list_before = safe_load_json(group.challenging_member_list, {})
-			if boss_num in challenging_member_list_before and str(qqid) in challenging_member_list_before[boss_num]:
-				if not challenging_member_list_before[boss_num][str(qqid)]['is_continue']:
-					has_normal_blade = True
-		if not has_normal_blade:
-			raise GroupError('返秒仅支持完整刀，请使用普通尾刀')
-
 	if not self.check_blade(group_id, qqid):
 		if behalf:
 			self.apply_for_challenge(is_continue, group_id, behalf, boss_num, qqid, False)
