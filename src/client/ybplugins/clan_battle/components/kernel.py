@@ -207,6 +207,11 @@ def execute(self, match_num, ctx):
 			if num_match:
 				second_time = int(num_match.group(1))
 
+			cont_match = re.search(r'(?:^| )(b|补偿|补|bc|B|BC|Bc|bC)(?: |$)', rest)
+			if cont_match:
+				is_continue = True
+				rest = re.sub(r'(?:^| )(b|补偿|补|bc|B|BC|Bc|bC)(?: |$)', '', rest).strip()
+
 			at_match = re.search(r'\[CQ:at,qq=(\d+)(?:,name=[^\]]*)?\]', rest)
 			if at_match:
 				behalf = int(at_match.group(1))
@@ -214,38 +219,25 @@ def execute(self, match_num, ctx):
 			group = self.get_clan_group(group_id)
 			blade_user = behalf or user_id
 
-			challenges = Clan_challenge.select().where(
-				Clan_challenge.gid == group_id,
-				Clan_challenge.qqid == blade_user,
-				Clan_challenge.bid == group.battle_id,
-			)
-			full_blades = sum(1 for c in challenges if not c.is_continue and c.boss_health_remain > 0)
-			tail_blades = sum(1 for c in challenges if not c.is_continue and c.boss_health_remain == 0)
-			cont_blades = sum(1 for c in challenges if c.is_continue)
+			# 补偿刀不能带返秒
+			if is_continue and second_time is not None:
+				return '补偿刀无需返还时间'
 
-			# 4阶段前无需检查返秒
-			if group.boss_cycle < 4:
-				if second_time is not None:
-					if full_blades + tail_blades >= 3:
-						return '今日已出完，请使用普通尾刀'
-					is_continue = False
-				else:
-					if full_blades + tail_blades >= 3 and cont_blades >= tail_blades:
-						return '今日已出完'
-					is_continue = (full_blades + tail_blades >= 3)
-			else:
-				# 4阶段后需要检查返秒
-				if second_time is not None:
-					if full_blades + tail_blades >= 3:
-						return '今日已出完，请使用普通尾刀'
-					if not (21 <= second_time <= 90):
-						return '请保证返还时间在21-90s范围内'
-					is_continue = False
-				else:
-					if full_blades + tail_blades < 3:
-						return '请使用尾刀+返秒（如：尾1 30s）'
-					if cont_blades >= tail_blades:
-						return '今日已出完'
+			# 返秒范围检查
+			if second_time is not None and not (21 <= second_time <= 90):
+				return '请保证返还时间在21-90s范围内'
+
+			# 4阶段后，不带返秒的普通尾刀需要先有完整刀
+			if group.boss_cycle >= 4 and second_time is None and not is_continue:
+				challenges = Clan_challenge.select().where(
+					Clan_challenge.gid == group_id,
+					Clan_challenge.qqid == blade_user,
+					Clan_challenge.bid == group.battle_id,
+				)
+				full_blades = sum(1 for c in challenges if not c.is_continue and c.boss_health_remain > 0)
+				tail_blades = sum(1 for c in challenges if not c.is_continue and c.boss_health_remain == 0)
+				if full_blades + tail_blades < 3:
+					return '请使用尾刀+返秒（如：尾1 30s）'
 
 			try:
 				boss_status = self.challenge(group_id, user_id, True, None, behalf, is_continue,
