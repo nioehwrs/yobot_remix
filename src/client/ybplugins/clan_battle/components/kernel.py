@@ -199,6 +199,11 @@ def execute(self, match_num, ctx):
 			behalf = None
 			previous_day = False
 
+			# 先解析 @成员
+			at_match = re.search(r'\[CQ:at,qq=(\d+)(?:,name=[^\]]*)?\]', rest)
+			if at_match:
+				behalf = int(at_match.group(1))
+
 			if '昨日' in rest:
 				previous_day = True
 				rest = re.sub(r'昨[日天]', '', rest).strip()
