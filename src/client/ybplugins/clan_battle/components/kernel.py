@@ -17,6 +17,7 @@ from ..util import atqq
 from .define import Commands, Server
 from .image_engine import download_missing_user_profile, image_engine_init
 from .multi_cq_utils import refresh
+from .realize import safe_load_json
 
 _logger = logging.getLogger(__name__)
 
