@@ -1440,6 +1440,18 @@ def challenger_info(self, group_id):
 			continue
 		half_challenge_list[str(qqid)] = f'{self._get_nickname_by_qqid(qqid)[:4]}'+ (f' x {num}' if num else '')
 
+	second_time_list:Dict[str, Any] = {"style-background-color": (224, 247, 250)}
+	for c in challenges:
+		if c.message and '返秒' in c.message:
+			match = re.search(r'返秒(\d+)s', c.message)
+			if match:
+				second_time = match.group(1)
+				qqid_str = str(c.qqid)
+				if qqid_str in second_time_list:
+					second_time_list[qqid_str] += f', {second_time}s'
+				else:
+					second_time_list[qqid_str] = f'{self._get_nickname_by_qqid(c.qqid)[:4]} {second_time}s'
+
 	challenging_list = safe_load_json(group.challenging_member_list)
 	group_boss_data = self._boss_data_dict(group)
 	boss_state_image_list:List[Union[Image.Image, BossStatusImageCore]] = []
@@ -1511,7 +1523,7 @@ def challenger_info(self, group_id):
 				background_color=_bg_color,
 			),
 		],
-		{"补偿": half_challenge_list}
+		{"补偿": half_challenge_list, "返秒": second_time_list}
 	)
 	result_image = generate_combind_boss_state_image([process_image, *boss_state_image_list])
 	if result_image.mode != "RGB":

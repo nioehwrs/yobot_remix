@@ -318,7 +318,7 @@ def execute(self, match_num, ctx):
 								is_cont_blade = True
 								break
 				if not is_cont_blade:
-					return '4阶段后请使用尾刀+返秒（如：尾刀 30s）'
+					return '请使用尾刀+返秒（如：尾刀 30s）'
 
 			try:
 				boss_status = self.challenge(group_id, user_id, True, None, behalf, is_continue,
