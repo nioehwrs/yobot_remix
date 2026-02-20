@@ -560,11 +560,11 @@ def generate_combind_boss_state_image(image_list: List[Union[Image.Image, BossSt
     return background.generate()
 
 
-async def download_pic(url: str, proxies: Optional[str] = None, file_name="") -> Optional[Path]:
+async def download_pic(url: str, proxy: Optional[str] = None, file_name="") -> Optional[Path]:
     image_path = USER_HEADERS_PATH.joinpath(file_name)
-    client = httpx.AsyncClient(proxies=proxies, timeout=5)
+    client = httpx.AsyncClient(proxy=proxy, timeout=5)
     try:
-        async with client.stream(method="GET", url=url, timeout=15) as response:  # type: ignore # params={"proxies": [proxies]}
+        async with client.stream(method="GET", url=url, timeout=15) as response:
             if response.status_code != 200:
                 raise ValueError(f"Image respond status code error: {response.status_code}")
             with open(image_path, "wb") as f:
