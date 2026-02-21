@@ -1442,8 +1442,9 @@ def challenger_info(self, group_id):
 		half_challenge_list[str(qqid)] = f'{self._get_nickname_by_qqid(qqid)[:4]}'+ (f' x {num}' if num else '')
 
 	second_time_list:Dict[str, Any] = {"style-background-color": (224, 247, 250)}
+	second_time_qqids = {str(qqid) for qqid, num in end_blade_qqid.items() if num > 0}
 	for c in challenges:
-		if c.message and '返秒' in c.message:
+		if c.message and '返秒' in c.message and str(c.qqid) in second_time_qqids:
 			match = re.search(r'返秒(\d+)s', c.message)
 			if match:
 				second_time = match.group(1)
