@@ -32,6 +32,15 @@ def init(self,
 	self.boss_id_name = boss_id_name
 	self.bossinfo = glo_setting['boss']
 	self.level_by_cycle = glo_setting['level_by_cycle']
+
+	def _level_by_cycle(self, cycle, game_server=None):
+		level = 0
+		for lv in self.level_by_cycle[game_server]:
+			if cycle >= lv[0] and cycle <= lv[1]:
+				return level
+			level += 1
+		return level
+
 	self.api = bot_api
 	self.group_data_list = {}
 
@@ -233,7 +242,7 @@ def execute(self, match_num, ctx):
 				return '请保证返还时间在21-90s范围内'
 
 			# 4阶段后，不带返秒的普通尾刀需要先有完整刀
-			if group.boss_cycle >= 4 and second_time is None and not is_continue:
+			if self._level_by_cycle(group.boss_cycle, group.game_server) >= 3 and second_time is None and not is_continue:
 				challenges = Clan_challenge.select().where(
 					Clan_challenge.gid == group_id,
 					Clan_challenge.qqid == blade_user,
@@ -308,7 +317,7 @@ def execute(self, match_num, ctx):
 			if not self.check_blade(group_id, blade_user):
 				return '请先申请出刀'
 
-			if second_time is None and group.boss_cycle >= 4:
+			if second_time is None and self._level_by_cycle(group.boss_cycle, group.game_server) >= 3:
 				challenging_member_list = safe_load_json(group.challenging_member_list, {})
 				is_cont_blade = False
 				if challenging_member_list:
