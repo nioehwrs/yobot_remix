@@ -19,10 +19,28 @@ class MergeBlade:
 
     @staticmethod
     def parse_damage(damage_str: str) -> int:
-        """解析伤害数值，支持纯数值或带w（万）的格式"""
+        """解析伤害数值，支持纯数值、带w（万）的格式，或简单加减法表达式"""
         if not damage_str:
             return 0
         damage_str = damage_str.strip().lower()
+        
+        if '+' in damage_str or '-' in damage_str:
+            import re
+            match = re.match(r'^([\d.]+w?)([+-])([\d.]+w?)$', damage_str)
+            if match:
+                left = match.group(1)
+                op = match.group(2)
+                right = match.group(3)
+                left_val = MergeBlade._parse_simple_number(left)
+                right_val = MergeBlade._parse_simple_number(right)
+                if left_val is None or right_val is None:
+                    return 0
+                if op == '+':
+                    return left_val + right_val
+                else:
+                    return left_val - right_val
+            return 0
+        
         if 'w' in damage_str:
             try:
                 return int(float(damage_str.replace('w', '')) * 10000)
@@ -33,6 +51,24 @@ class MergeBlade:
             if damage < 999999:
                 return damage * 10000
             return damage
+
+    @staticmethod
+    def _parse_simple_number(num_str: str) -> int:
+        """解析简单的数值或带w的数值"""
+        num_str = num_str.strip().lower()
+        if 'w' in num_str:
+            try:
+                return int(float(num_str.replace('w', '')) * 10000)
+            except ValueError:
+                return None
+        else:
+            try:
+                num = int(num_str)
+                if num < 999999:
+                    return num * 10000
+                return num
+            except ValueError:
+                return None
 
     def calculate_compensation(self, current_hp: int, first_damage: int, second_damage: int) -> int:
         """计算补偿时间，单位：秒"""
@@ -92,7 +128,7 @@ class MergeBlade:
         cmd = msg.get("raw_message", "").strip()
 
         two_damage_pattern = re.match(
-            r'^(?:合刀|cal)\s+(\d+\.?\d*)\s+(\d+\.?\d*)\s+(\d+\.?\d*)$',
+            r'^(?:合刀|cal)\s*(\d+\.?\d*)\s+(\d+\.?\d*)\s+(\d+\.?\d*)$',
             cmd
         )
 
@@ -139,7 +175,7 @@ class MergeBlade:
                 return f"计算错误：{str(e)}"
 
         one_damage_pattern = re.match(
-            r'^(?:合刀|cal)\s+(\d+\.?\d*)\s+(\d+\.?\d*)$',
+            r'^(?:合刀|cal)\s*(\d+\.?\d*)\s+(\d+\.?\d*)$',
             cmd
         )
 
@@ -163,7 +199,7 @@ class MergeBlade:
                 return f"计算错误：{str(e)}"
 
         single_hp_pattern = re.match(
-            r'^(?:合刀|cal)\s+(\d+\.?\d*)$',
+            r'^(?:合刀|cal)\s*(\d+\.?\d*)$',
             cmd
         )
 
