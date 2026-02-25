@@ -128,7 +128,7 @@ class MergeBlade:
         cmd = msg.get("raw_message", "").strip()
 
         two_damage_pattern = re.match(
-            r'^(?:合刀|cal)\s*(\d+\.?\d*)\s+(\d+\.?\d*)\s+(\d+\.?\d*)$',
+            r'^(?:合刀|cal)\s*(\d+\.?\d*w?(?:[+-]\d+\.?\d*w?)*)\s+(\d+\.?\d*w?(?:[+-]\d+\.?\d*w?)*)\s+(\d+\.?\d*w?(?:[+-]\d+\.?\d*w?)*)$',
             cmd
         )
 
@@ -175,7 +175,7 @@ class MergeBlade:
                 return f"计算错误：{str(e)}"
 
         one_damage_pattern = re.match(
-            r'^(?:合刀|cal)\s*(\d+\.?\d*)\s+(\d+\.?\d*)$',
+            r'^(?:合刀|cal)\s*(\d+\.?\d*w?(?:[+-]\d+\.?\d*w?)*)\s+(\d+\.?\d*w?(?:[+-]\d+\.?\d*w?)*)$',
             cmd
         )
 
