@@ -242,7 +242,9 @@ def execute(self, match_num, ctx):
 				return '请保证返还时间在21-90s范围内'
 
 			# 4阶段后，不带返秒的普通尾刀需要先有完整刀
-			if self._level_by_cycle(group.boss_cycle, group.game_server) >= 3 and second_time is None and not is_continue:
+			current_level = self._level_by_cycle(group.boss_cycle, group.game_server)
+			_logger.info(f'尾刀检查: boss_cycle={group.boss_cycle}, game_server={group.game_server}, level={current_level}')
+			if current_level >= 3 and second_time is None and not is_continue:
 				challenges = Clan_challenge.select().where(
 					Clan_challenge.gid == group_id,
 					Clan_challenge.qqid == blade_user,
