@@ -38,6 +38,8 @@ class MergeBlade:
         """计算补偿时间，单位：秒"""
         if second_damage == 0:
             return 0
+        if first_damage + second_damage < current_hp:
+            return -1
         remaining_hp = current_hp - first_damage
         if remaining_hp < 0:
             remaining_hp = 0
@@ -56,10 +58,10 @@ class MergeBlade:
         return str(damage)
 
     def calculate_full_compensation_damage(self, current_hp: int) -> str:
-        """计算满补所需伤害（1-4刀）"""
+        """计算满补所需伤害（1-6刀）"""
         lines = [f"HP={current_hp}", "刀数 / 满补所需伤害"]
 
-        for x in range(1, 5):
+        for x in range(1, 7):
             denominator = x - 1 + 21 / 90
             full_compensation_damage = math.floor(current_hp / denominator) + 1
             lines.append(f"{x}刀      {full_compensation_damage}")
@@ -116,12 +118,20 @@ class MergeBlade:
                 format_damage1 = self.format_damage(damage1)
                 format_damage2 = self.format_damage(damage2)
 
-                response_lines = [
-                    f"boss血量={self.format_damage(current_hp)}",
-                    f"对boss伤害={format_damage1} | {format_damage2}",
-                    f"若[{damage1}]先出，[{damage2}]后出，补偿{comp1}s",
-                    f"若[{damage2}]先出，[{damage1}]后出，补偿{comp2}s",
-                ]
+                if comp1 < 0 or comp2 < 0:
+                    remaining_hp = current_hp - damage1 - damage2
+                    response_lines = [
+                        f"boss血量={self.format_damage(current_hp)}",
+                        f"对boss伤害={format_damage1} | {format_damage2}",
+                        f"剩余{remaining_hp}血",
+                    ]
+                else:
+                    response_lines = [
+                        f"boss血量={self.format_damage(current_hp)}",
+                        f"对boss伤害={format_damage1} | {format_damage2}",
+                        f"若[{damage1}]先出，[{damage2}]后出，补偿{comp1}s",
+                        f"若[{damage2}]先出，[{damage1}]后出，补偿{comp2}s",
+                    ]
 
                 return "\n".join(response_lines)
 

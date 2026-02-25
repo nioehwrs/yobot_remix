@@ -13,7 +13,7 @@ from apscheduler.triggers.cron import CronTrigger
 
 from ...ybdata import Clan_group, Clan_member, User, Clan_challenge
 from ..exception import ClanBattleError, InputError, GroupNotExist
-from ..util import atqq
+from ..util import atqq, pcr_datetime
 from .define import Commands, Server
 from .image_engine import download_missing_user_profile, image_engine_init
 from .multi_cq_utils import refresh
@@ -243,15 +243,17 @@ def execute(self, match_num, ctx):
 
 			# 4阶段后，不带返秒的普通尾刀需要先有完整刀
 			current_level = self._level_by_cycle(group.boss_cycle, group.game_server)
-			_logger.info(f'尾刀检查: boss_cycle={group.boss_cycle}, game_server={group.game_server}, level={current_level}')
 			if current_level >= 3 and second_time is None and not is_continue:
+				d, t = pcr_datetime(area=group.game_server)
 				challenges = Clan_challenge.select().where(
 					Clan_challenge.gid == group_id,
 					Clan_challenge.qqid == blade_user,
 					Clan_challenge.bid == group.battle_id,
+					Clan_challenge.challenge_pcrdate == d,
 				)
 				full_blades = sum(1 for c in challenges if not c.is_continue and c.boss_health_remain > 0)
 				tail_blades = sum(1 for c in challenges if not c.is_continue and c.boss_health_remain == 0)
+				_logger.info(f'尾刀检查: full_blades={full_blades}, tail_blades={tail_blades}, total={full_blades + tail_blades}')
 				if full_blades + tail_blades < 3:
 					return '请使用尾刀+返秒（如：尾1 30s）'
 
