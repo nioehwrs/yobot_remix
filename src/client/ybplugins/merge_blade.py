@@ -199,7 +199,7 @@ class MergeBlade:
                 return f"计算错误：{str(e)}"
 
         single_hp_pattern = re.match(
-            r'^(?:合刀|cal)\s*(\d+\.?\d*)$',
+            r'^(?:合刀|cal)\s*(\d+\.?\d*w?(?:[+-]\d+\.?\d*w?)*)$',
             cmd
         )
 
