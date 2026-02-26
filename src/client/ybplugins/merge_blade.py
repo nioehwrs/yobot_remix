@@ -105,19 +105,38 @@ class MergeBlade:
         return "\n".join(lines)
 
     def calculate_one_damage_compensation(self, current_hp: int, damage1: int) -> str:
-        """计算单伤害的合刀满补所需伤害"""
-        second_damage_if_first = math.floor((current_hp - damage1) / (21 / 90)) + 1
-        first_damage_if_second = math.floor(current_hp - damage1 * (21 / 90)) + 1
+        """计算单伤害的合刀"""
+        if damage1 >= current_hp:
+            compensation = 110 - math.floor((current_hp / damage1) * 90)
+            if compensation > 90:
+                compensation = 90
+            if compensation == 90:
+                response_lines = [
+                    f"boss血量={self.format_damage(current_hp)}",
+                    f"对boss伤害={self.format_damage(damage1)}",
+                    f"补偿{compensation}s",
+                ]
+            else:
+                fill_damage = math.ceil(current_hp - 21 * damage1 / 90)
+                response_lines = [
+                    f"boss血量={self.format_damage(current_hp)}",
+                    f"对boss伤害={self.format_damage(damage1)}",
+                    f"补偿{compensation}s",
+                    f"垫入{self.format_damage(fill_damage)}伤害可满补",
+                ]
+        else:
+            second_damage_if_first = math.floor((current_hp - damage1) / (21 / 90)) + 1
+            first_damage_if_second = math.floor(current_hp - damage1 * (21 / 90)) + 1
 
-        first_note = "（高于boss血量）才能满补" if second_damage_if_first > current_hp else "可满补"
-        second_note = "可满补" if first_damage_if_second <= current_hp else "才能满补"
+            first_note = "（高于boss血量）才能满补" if second_damage_if_first > current_hp else "可满补"
+            second_note = "可满补" if first_damage_if_second <= current_hp else "才能满补"
 
-        response_lines = [
-            f"boss血量={current_hp}",
-            f"对boss伤害={damage1}",
-            f"若[{damage1}]先出，后出刀需{second_damage_if_first}伤害{first_note}",
-            f"若[{damage1}]后出，先出刀需{first_damage_if_second}伤害{second_note}",
-        ]
+            response_lines = [
+                f"boss血量={current_hp}",
+                f"对boss伤害={damage1}",
+                f"若[{damage1}]先出，后出刀需{second_damage_if_first}伤害{first_note}",
+                f"若[{damage1}]后出，先出刀需{first_damage_if_second}伤害{second_note}",
+            ]
 
         return "\n".join(response_lines)
 
