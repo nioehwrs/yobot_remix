@@ -737,6 +737,29 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="stats-config-row" v-if="day > 1">
+                                <div class="grid-cycle-column" style="width: 50px; flex-shrink: 0;"></div>
+                                <div class="stats-config-cell" v-for="boss in bosses" :key="'config-modify-' + day + '-' + boss">
+                                    <span class="config-label">修正:</span>
+                                    <select class="config-select" :id="'ax-select-' + day + '-' + boss" 
+                                            @change="updateStats(day, boss, 'ax', $event.target.value)"
+                                            :disabled="(dayStats[day] && dayStats[day].locked) || (dayStats[day] && dayStats[day].usePrevious)">
+                                        <option v-for="n in [-3,-2,-1,0,1,2,3]" :value="n" :selected="(statsConfig[day] && statsConfig[day][boss] && statsConfig[day][boss].ax) ? statsConfig[day][boss].ax == n : n == 0">{{ n }}</option>
+                                    </select>
+                                    <span class="config-label">+</span>
+                                    <select class="config-select" :id="'bx-select-' + day + '-' + boss" 
+                                            @change="updateStats(day, boss, 'bx', $event.target.value)"
+                                            :disabled="(dayStats[day] && dayStats[day].locked) || (dayStats[day] && dayStats[day].usePrevious)">
+                                        <option v-for="n in [0,1,2,3]" :value="n" :selected="(statsConfig[day] && statsConfig[day][boss] && statsConfig[day][boss].bx) ? statsConfig[day][boss].bx == n : n == 0">{{ n }}</option>
+                                    </select>
+                                    <span class="config-label">/</span>
+                                    <select class="config-select" :id="'cx-select-' + day + '-' + boss" 
+                                            @change="updateStats(day, boss, 'cx', $event.target.value)"
+                                            :disabled="(dayStats[day] && dayStats[day].locked) || (dayStats[day] && dayStats[day].usePrevious)">
+                                        <option v-for="n in [2,3,4]" :value="n" :selected="(statsConfig[day] && statsConfig[day][boss] && statsConfig[day][boss].cx) ? statsConfig[day][boss].cx == n : n == 2">{{ n }}</option>
+                                    </select>
+                                </div>
+                            </div>
                             <div class="grid-container">
                                 <div class="grid-cycle-column">
                                     <div class="grid-cycle" v-for="cycle in getCyclesToShow(day)" :key="'day' + day + '-cycle-' + cycle">

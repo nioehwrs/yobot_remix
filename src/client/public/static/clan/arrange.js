@@ -1,4 +1,4 @@
-﻿var CONFIG = {
+var CONFIG = {
     X: { min: 5, max: 40, defaultDay1: 14, defaultDay2to5: 18 },
     A: { options: [1, 2, 3, 4, 5, 6] },
     B: { options: [0, 1, 2, 3] },
@@ -372,7 +372,10 @@ var vm = new Vue({
                         b: 0,
                         c: 2,
                         x: defaultX,
-                        tail: 'full'
+                        tail: 'full',
+                        ax: 0,
+                        bx: 0,
+                        cx: 2
                     };
                 }
             }
@@ -422,6 +425,25 @@ var vm = new Vue({
                 document.getElementById('x-input-' + day + '-' + boss).value = newX;
             } else if (field === 'tail') {
                 this.$set(currentConfig, 'tail', value);
+            } else if (field === 'ax') {
+                this.$set(currentConfig, 'ax', parseInt(value) || 0);
+                shouldRecalculate = true;
+            } else if (field === 'bx') {
+                var newBx = parseInt(value) || 0;
+                this.$set(currentConfig, 'bx', newBx);
+                shouldRecalculate = true;
+                if (newBx >= currentConfig.cx) {
+                    this.$set(currentConfig, 'cx', newBx + 1);
+                }
+                document.getElementById('cx-select-' + day + '-' + boss).value = currentConfig.cx;
+            } else if (field === 'cx') {
+                var newCx = parseInt(value) || 2;
+                this.$set(currentConfig, 'cx', newCx);
+                shouldRecalculate = true;
+                if (currentConfig.bx >= newCx) {
+                    this.$set(currentConfig, 'bx', newCx - 1);
+                }
+                document.getElementById('bx-select-' + day + '-' + boss).value = currentConfig.bx;
             }
 
             if (shouldRecalculate) {
@@ -534,7 +556,10 @@ var vm = new Vue({
                         b: this.statsConfig[prevDay][boss].b || 0,
                         c: this.statsConfig[prevDay][boss].c || 2,
                         x: this.statsConfig[prevDay][boss].x || defaultX,
-                        tail: this.statsConfig[prevDay][boss].tail || 'full'
+                        tail: this.statsConfig[prevDay][boss].tail || 'full',
+                        ax: this.statsConfig[prevDay][boss].ax || 0,
+                        bx: this.statsConfig[prevDay][boss].bx || 0,
+                        cx: this.statsConfig[prevDay][boss].cx || 2
                     });
                 }
             }
@@ -559,6 +584,9 @@ var vm = new Vue({
                     this.$set(this.statsConfig[day][boss], 'c', source.c || 2);
                     this.$set(this.statsConfig[day][boss], 'x', source.x || defaultX);
                     this.$set(this.statsConfig[day][boss], 'tail', source.tail || 'full');
+                    this.$set(this.statsConfig[day][boss], 'ax', source.ax || 0);
+                    this.$set(this.statsConfig[day][boss], 'bx', source.bx || 0);
+                    this.$set(this.statsConfig[day][boss], 'cx', source.cx || 2);
                 }
             }
         },
@@ -571,6 +599,9 @@ var vm = new Vue({
             var a = config.a || 1;
             var b = config.b || 0;
             var c = config.c || 2;
+            var ax = config.ax || 0;
+            var bx = config.bx || 0;
+            var cx = config.cx || 2;
 
             if (!this.dayResult[day]) {
                 this.dayResult[day] = {};
@@ -588,7 +619,7 @@ var vm = new Vue({
             if (day === 1) {
                 result = this.calcDay1(boss, x, a, b, c);
             } else {
-                result = this.calcDayN(boss, day, x, a, b, c);
+                result = this.calcDayN(boss, day, x, a, b, c, ax, bx, cx);
             }
 
             this.$set(this.dayResult[day], boss, result);
@@ -695,10 +726,12 @@ var vm = new Vue({
 
             return result;
         },
-        calcDayN(boss, day, x, a, b, c) {
+        calcDayN(boss, day, x, a, b, c, ax, bx, cx) {
             var BLOCK_VALUE = 12;
             var F = x * BLOCK_VALUE;
             var D = a * BLOCK_VALUE + b * BLOCK_VALUE / c;
+            
+            var FPrime = F + ax * BLOCK_VALUE + bx * BLOCK_VALUE / cx;
 
             var fullCyclesPrev = 0;
             for (var d = 1; d < day; d++) {
@@ -714,12 +747,12 @@ var vm = new Vue({
             }
 
             var J = fullCyclesPrev + 22 + (day - 1);
-            var G = Math.floor((F + HPrev) / D) - 1;
+            var G = Math.floor((FPrime + HPrev) / D) - 1;
             var K = D - HPrev;
-            var H = (F + HPrev) % D;
+            var H = (FPrime + HPrev) % D;
 
             var result = {
-                D: D, F: F, G: G, H: H, J: J, K: K,
+                D: D, F: F, FPrime: FPrime, G: G, H: H, J: J, K: K,
                 rows: [],
                 maxWidth: 0,
                 maxCycle: 0
