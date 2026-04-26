@@ -197,7 +197,7 @@ def execute(self, match_num, ctx):
 
 	elif match_num == 5:  # 尾刀 或 尾1-5
 		# 区分尾刀和尾1-5
-		if re.match(r'^(?:尾[1-5]|尾刀[1-5])(?: |$)', cmd):
+		if re.match(r'^(?:尾[1-5]|尾刀[1-5])(?: |@|$)', cmd):
 			# 尾1-5 或 尾刀1-5 无需申请出刀模式
 			match = re.match(r'^(?:尾|尾刀)([1-5]) ?(.*)$', cmd)
 			if not match: return
